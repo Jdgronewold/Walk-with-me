@@ -20,7 +20,7 @@ With this application, users will be able to:
 
 ### Wireframes
 
-![wireframes](images/login.png)
+![wireframes](images/Log In.png)
 
 ### Technologies & Technical Challenges
 
