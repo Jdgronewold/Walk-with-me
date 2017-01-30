@@ -6,6 +6,20 @@ class User < ApplicationRecord
 
   after_initialize :ensure_session_token
 
+  has_many(
+    :written_ratings,
+    :class_name => "Ratings",
+    :foreign_key => :writer_id,
+    :primary_key => :id
+  )
+
+  has_many(
+    :received_ratings,
+    :class_name => "Ratings",
+    :foreign_key => :receiver_id,
+    :primary_key => :id
+  )
+
   def self.find_by_credentials(username, password)
     user = User.find_by_username(username)
     return nil unless user
