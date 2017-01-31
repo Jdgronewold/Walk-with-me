@@ -3,7 +3,7 @@
  * https://github.com/facebook/react-native
  * @flow
  */
-
+import * as firebase from 'firebase';
 import React, { Component } from 'react';
 import {
   AppRegistry,
@@ -11,6 +11,14 @@ import {
   Text,
   View
 } from 'react-native';
+
+const firebaseConfig = {
+  apiKey: "<your-api-key>",
+  authDomain: "<your-auth-domain>",
+  databaseURL: "<your-database-url>",
+  storageBucket: "<your-storage-bucket>",
+};
+const firebaseApp = firebase.initializeApp(firebaseConfig);
 
 export default class WalkWithMe extends Component {
   render() {
