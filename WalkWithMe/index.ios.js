@@ -13,10 +13,11 @@ import {
 } from 'react-native';
 
 const firebaseConfig = {
-  apiKey: "<your-api-key>",
-  authDomain: "<your-auth-domain>",
-  databaseURL: "<your-database-url>",
-  storageBucket: "<your-storage-bucket>",
+  apiKey: "AIzaSyAs9jyA0Zt8hoqiwt7DlNgJk0wUsFNe0SE",
+  authDomain: "walk-with-me-3790b.firebaseapp.com",
+  databaseURL: "https://walk-with-me-3790b.firebaseio.com",
+  storageBucket: "walk-with-me-3790b.appspot.com",
+  messagingSenderId: "915034257013"
 };
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 
