@@ -9,7 +9,8 @@ import {
   AppRegistry,
   StyleSheet,
   Text,
-  View
+  View,
+  Button
 } from 'react-native';
 
 const firebaseConfig = {
@@ -24,6 +25,14 @@ var provider = new firebase.auth.FacebookAuthProvider();
 provider.addScope('public_profile');
 
 export default class WalkWithMe extends Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      user: null,
+      token: null,
+    };
+  }
+
   handleLogin(e){
     console.log("this is working");
     console.log(e);
@@ -66,7 +75,7 @@ export default class WalkWithMe extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <button color="#841584" onPress={this.handleLogin}>Login with Facebook</button>
+        <Button color="#841584" onPress={this.handleLogin} title="Login with Facebook"/>
         <Text style={styles.welcome}>
           Your name is {JSON.stringify(this.state.user)}
           Welcome to React Native!
