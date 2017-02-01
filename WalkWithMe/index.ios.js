@@ -4,6 +4,7 @@
  * @flow
  */
 import * as firebase from 'firebase';
+import MapView from 'react-native-maps';
 import React, { Component } from 'react';
 import {
   AppRegistry,
@@ -12,6 +13,7 @@ import {
   View
 } from 'react-native';
 
+// Initialize Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyDiDp0eq75WK0MAeVAQL3aA9EptcIyWL2U",
   authDomain: "walk-with-me-6cf40.firebaseapp.com",
@@ -19,6 +21,7 @@ const firebaseConfig = {
   storageBucket: "walk-with-me-6cf40.appspot.com",
   messagingSenderId: "199658348422"
 };
+
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 var provider = new firebase.auth.FacebookAuthProvider();
 provider.addScope('public_profile');

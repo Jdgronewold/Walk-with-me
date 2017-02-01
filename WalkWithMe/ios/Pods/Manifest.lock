@@ -12,8 +12,6 @@ PODS:
   - React/jschelpers (0.40.0)
   - React/RCTActionSheet (0.40.0):
     - React/Core
-  - React/RCTAnimation (0.40.0):
-    - React/Core
   - React/RCTGeolocation (0.40.0):
     - React/Core
   - React/RCTImage (0.40.0):
@@ -37,7 +35,6 @@ DEPENDENCIES:
   - GoogleMaps
   - React/Core (from `../node_modules/react-native`)
   - React/RCTActionSheet (from `../node_modules/react-native`)
-  - React/RCTAnimation (from `../node_modules/react-native`)
   - React/RCTGeolocation (from `../node_modules/react-native`)
   - React/RCTImage (from `../node_modules/react-native`)
   - React/RCTLinkingIOS (from `../node_modules/react-native`)
@@ -55,6 +52,6 @@ SPEC CHECKSUMS:
   GoogleMaps: a5b5bbe47734e2443bde781a6aa64e69fdb6d785
   React: 6dfb2f72edb1d74a800127ae157af038646673ce
 
-PODFILE CHECKSUM: a580c519a54d8a8a7e41f9568605906eb111ebb9
+PODFILE CHECKSUM: 82525214900c2051d559a4f48b48e33297287282
 
-COCOAPODS: 1.2.0
+COCOAPODS: 1.1.1

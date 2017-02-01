@@ -9,3 +9,6 @@
 
 More info here: https://gist.github.com/blackfalcon/8428401
 and here: https://www.atlassian.com/git/tutorials/making-a-pull-request#example
+
+Gmap key:
+AIzaSyDUWVHvYA-psNWSTrpwIFlLM84soy3PxzA
