@@ -1,17 +1,13 @@
-# You Podfile should look similar to this file. Whether you use_frameworks! or not, the following configuration should work.
-#
-# However if you DO NOT use_frameworks! and you prefer to install pods instead of
-# dragging the AirMaps directory into your project, refer to the comments below (steps 1~4)
-
+# You Podfile should look similar to this file. React Native currently does not support use_frameworks!
 source 'https://github.com/CocoaPods/Specs.git'
-# specific your target ios version here
-platform :ios, '10.0'
-use_frameworks!
+
+platform :ios, '8.0'
 
 target 'WalkWithMe' do
   pod 'React', path: '../node_modules/react-native', :subspecs => [
     'Core',
     'RCTActionSheet',
+    'RCTAnimation',
     'RCTGeolocation',
     'RCTImage',
     'RCTLinkingIOS',
@@ -22,11 +18,9 @@ target 'WalkWithMe' do
     'RCTWebSocket'
   ]
 
-  pod 'GoogleMaps'
+  pod 'GoogleMaps'  # <~~ remove this line if you do not want to support GoogleMaps on iOS
 
-  # add if you have a subproject like <app>Tests
-  #target '<put_your_app_subproject_name_here>' do
-  #  inherit! :search_paths
-  #  pod 'GoogleMaps'
-  #end
+# when not using frameworks  we can do this instead of including the source files in our project (1/4):
+#  pod 'react-native-maps', path: '../../'
+#  pod 'react-native-google-maps', path: '../../'  # <~~ if you need GoogleMaps support on iOS
 end
