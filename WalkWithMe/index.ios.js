@@ -30,6 +30,14 @@ export default class WalkWithMe extends Component {
     firebase.auth().signInWithRedirect(provider);
   }
 
+  handleLogout(e){
+    firebase.auth().signOut().then(function() {
+    // Sign-out successful.
+    }, function(error) {
+      // An error happened.
+    });
+  }
+
   componentDidMount(){
     firebase.auth().getRedirectResult()
       .then(function(result) {
@@ -58,7 +66,7 @@ export default class WalkWithMe extends Component {
   render() {
     return (
       <View style={styles.container}>
-        <button input="submit" onClick={this.handleLogin}>Login with Facebook</button>
+        <button color="#841584" onPress={this.handleLogin}>Login with Facebook</button>
         <Text style={styles.welcome}>
           Your name is {JSON.stringify(this.state.user)}
           Welcome to React Native!
