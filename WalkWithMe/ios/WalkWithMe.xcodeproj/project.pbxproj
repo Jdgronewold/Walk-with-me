@@ -22,10 +22,10 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		140ED2AC1D01E1AD002B40FF /* ReferenceProxy in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
 		146834051AC3E58100842450 /* ReferenceProxy in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
-		3DA23E17AAA9B8C5E295B2F5 /* libPods-WalkWithMe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = F9A85253E95B382BE04D3BEB /* libPods-WalkWithMe.a */; };
-		5049859D4BD14A12DB41AE0F /* libPods-WalkWithMeTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 67B040382926E83B68894606 /* libPods-WalkWithMeTests.a */; };
+		2014994E81688E363788095B /* Pods_WalkWithMe.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 384689D31A196CA3FCCECB58 /* Pods_WalkWithMe.framework */; };
 		5E9157361DD0AC6A00FF2AA8 /* ReferenceProxy in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E9157331DD0AC6500FF2AA8 /* libRCTAnimation.a */; };
 		832341BD1AAA6AB300B99B32 /* ReferenceProxy in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
+		8E920DEBAF844789A341C9CE /* libAirMaps.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FB50336AD8924D59B9044C2B /* libAirMaps.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -223,7 +223,6 @@
 		00E356EE1AD99517003FC87E /* WalkWithMeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WalkWithMeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* WalkWithMeTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WalkWithMeTests.m; sourceTree = "<group>"; };
-		0D61B498A70EB4102139BDC5 /* Pods-WalkWithMe.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WalkWithMe.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WalkWithMe/Pods-WalkWithMe.debug.xcconfig"; sourceTree = "<group>"; };
 		139105B61AF99BAD00B5F7CC /* RCTSettings.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTSettings.xcodeproj; path = "../node_modules/react-native/Libraries/Settings/RCTSettings.xcodeproj"; sourceTree = "<group>"; };
 		139FDEE61B06529A00C62182 /* RCTWebSocket.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTWebSocket.xcodeproj; path = "../node_modules/react-native/Libraries/WebSocket/RCTWebSocket.xcodeproj"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* WalkWithMe.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WalkWithMe.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -234,14 +233,14 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = WalkWithMe/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = WalkWithMe/main.m; sourceTree = "<group>"; };
 		146833FF1AC3E56700842450 /* React.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = React.xcodeproj; path = "../node_modules/react-native/React/React.xcodeproj"; sourceTree = "<group>"; };
-		2FA5FDEF90BF16E6384A2792 /* Pods-WalkWithMeTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WalkWithMeTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WalkWithMeTests/Pods-WalkWithMeTests.debug.xcconfig"; sourceTree = "<group>"; };
-		34839C870AD6E8A39D5DB88D /* Pods-WalkWithMeTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WalkWithMeTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-WalkWithMeTests/Pods-WalkWithMeTests.release.xcconfig"; sourceTree = "<group>"; };
+		204E32D0E2BE0927DBE1ECBD /* Pods-WalkWithMe.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WalkWithMe.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WalkWithMe/Pods-WalkWithMe.debug.xcconfig"; sourceTree = "<group>"; };
+		384689D31A196CA3FCCECB58 /* Pods_WalkWithMe.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_WalkWithMe.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTAnimation.xcodeproj; path = "../node_modules/react-native/Libraries/NativeAnimation/RCTAnimation.xcodeproj"; sourceTree = "<group>"; };
-		67B040382926E83B68894606 /* libPods-WalkWithMeTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WalkWithMeTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		783CDF3FD12A39343F0D6965 /* Pods-WalkWithMe.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WalkWithMe.release.xcconfig"; path = "Pods/Target Support Files/Pods-WalkWithMe/Pods-WalkWithMe.release.xcconfig"; sourceTree = "<group>"; };
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
-		8FBA0D8B32CAC8B7A2A5334F /* Pods-WalkWithMe.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WalkWithMe.release.xcconfig"; path = "Pods/Target Support Files/Pods-WalkWithMe/Pods-WalkWithMe.release.xcconfig"; sourceTree = "<group>"; };
-		F9A85253E95B382BE04D3BEB /* libPods-WalkWithMe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WalkWithMe.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		CCBDA81C1974453FB43928C9 /* AirMaps.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = AirMaps.xcodeproj; path = "../node_modules/react-native-maps/ios/AirMaps.xcodeproj"; sourceTree = "<group>"; };
+		FB50336AD8924D59B9044C2B /* libAirMaps.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = archive.ar; name = libAirMaps.a; path = libAirMaps.a; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -250,7 +249,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				140ED2AC1D01E1AD002B40FF /* ReferenceProxy in Frameworks */,
-				5049859D4BD14A12DB41AE0F /* libPods-WalkWithMeTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -269,7 +267,8 @@
 				832341BD1AAA6AB300B99B32 /* ReferenceProxy in Frameworks */,
 				00C302EA1ABCBA2D00DB3ED1 /* ReferenceProxy in Frameworks */,
 				139FDEF61B0652A700C62182 /* ReferenceProxy in Frameworks */,
-				3DA23E17AAA9B8C5E295B2F5 /* libPods-WalkWithMe.a in Frameworks */,
+				8E920DEBAF844789A341C9CE /* libAirMaps.a in Frameworks */,
+				2014994E81688E363788095B /* Pods_WalkWithMe.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -400,6 +399,15 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		7B9FC47A458C89214B4D923B /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				204E32D0E2BE0927DBE1ECBD /* Pods-WalkWithMe.debug.xcconfig */,
+				783CDF3FD12A39343F0D6965 /* Pods-WalkWithMe.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
 			isa = PBXGroup;
 			children = (
@@ -414,6 +422,7 @@
 				832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */,
 				00C302DF1ABCB9EE00DB3ED1 /* RCTVibration.xcodeproj */,
 				139FDEE61B06529A00C62182 /* RCTWebSocket.xcodeproj */,
+				CCBDA81C1974453FB43928C9 /* AirMaps.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -434,8 +443,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* WalkWithMeTests */,
 				83CBBA001A601CBA00E9B192 /* Products */,
-				B65BCEEF182F9D9344B33D01 /* Pods */,
-				F56D4324D2F76DA63DD29B66 /* Frameworks */,
+				7B9FC47A458C89214B4D923B /* Pods */,
+				F8FB444C7F431F5FE43ED8AF /* Frameworks */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -450,22 +459,10 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		B65BCEEF182F9D9344B33D01 /* Pods */ = {
+		F8FB444C7F431F5FE43ED8AF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				0D61B498A70EB4102139BDC5 /* Pods-WalkWithMe.debug.xcconfig */,
-				8FBA0D8B32CAC8B7A2A5334F /* Pods-WalkWithMe.release.xcconfig */,
-				2FA5FDEF90BF16E6384A2792 /* Pods-WalkWithMeTests.debug.xcconfig */,
-				34839C870AD6E8A39D5DB88D /* Pods-WalkWithMeTests.release.xcconfig */,
-			);
-			name = Pods;
-			sourceTree = "<group>";
-		};
-		F56D4324D2F76DA63DD29B66 /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				F9A85253E95B382BE04D3BEB /* libPods-WalkWithMe.a */,
-				67B040382926E83B68894606 /* libPods-WalkWithMeTests.a */,
+				384689D31A196CA3FCCECB58 /* Pods_WalkWithMe.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -477,12 +474,9 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "WalkWithMeTests" */;
 			buildPhases = (
-				82C7B307E77453C712E89AE3 /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				D6B1AC273DECAF647AB39E5B /* [CP] Embed Pods Frameworks */,
-				DE15BF9D656422950CB1B38C /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -498,13 +492,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "WalkWithMe" */;
 			buildPhases = (
-				E4A2EA746701A38C716118FB /* [CP] Check Pods Manifest.lock */,
+				3CD1E82A0D7D6A96B019BC7B /* [CP] Check Pods Manifest.lock */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				E1974B0553940F0CFFDAB6C4 /* [CP] Embed Pods Frameworks */,
-				C03E81AA162FF6B1555F9558 /* [CP] Copy Pods Resources */,
+				FF579902BB503AEAFADEC059 /* [CP] Embed Pods Frameworks */,
+				5CDCCA883F8B6B4432AFBCF3 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -521,7 +515,7 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0610;
+				LastUpgradeCheck = 610;
 				ORGANIZATIONNAME = Facebook;
 				TargetAttributes = {
 					00E356ED1AD99517003FC87E = {
@@ -807,7 +801,7 @@
 			shellPath = /bin/sh;
 			shellScript = "export NODE_BINARY=node\n../node_modules/react-native/packager/react-native-xcode.sh";
 		};
-		82C7B307E77453C712E89AE3 /* [CP] Check Pods Manifest.lock */ = {
+		3CD1E82A0D7D6A96B019BC7B /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -822,7 +816,7 @@
 			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
-		C03E81AA162FF6B1555F9558 /* [CP] Copy Pods Resources */ = {
+		5CDCCA883F8B6B4432AFBCF3 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -837,37 +831,7 @@
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-WalkWithMe/Pods-WalkWithMe-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		D6B1AC273DECAF647AB39E5B /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-WalkWithMeTests/Pods-WalkWithMeTests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		DE15BF9D656422950CB1B38C /* [CP] Copy Pods Resources */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Copy Pods Resources";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-WalkWithMeTests/Pods-WalkWithMeTests-resources.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E1974B0553940F0CFFDAB6C4 /* [CP] Embed Pods Frameworks */ = {
+		FF579902BB503AEAFADEC059 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -880,21 +844,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-WalkWithMe/Pods-WalkWithMe-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		E4A2EA746701A38C716118FB /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
@@ -942,7 +891,6 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 2FA5FDEF90BF16E6384A2792 /* Pods-WalkWithMeTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -952,6 +900,10 @@
 				INFOPLIST_FILE = WalkWithMeTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WalkWithMe.app/WalkWithMe";
 			};
@@ -959,13 +911,16 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 34839C870AD6E8A39D5DB88D /* Pods-WalkWithMeTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
 				INFOPLIST_FILE = WalkWithMeTests/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WalkWithMe.app/WalkWithMe";
 			};
@@ -973,7 +928,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0D61B498A70EB4102139BDC5 /* Pods-WalkWithMe.debug.xcconfig */;
+			baseConfigurationReference = 204E32D0E2BE0927DBE1ECBD /* Pods-WalkWithMe.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CURRENT_PROJECT_VERSION = 1;
@@ -992,7 +947,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8FBA0D8B32CAC8B7A2A5334F /* Pods-WalkWithMe.release.xcconfig */;
+			baseConfigurationReference = 783CDF3FD12A39343F0D6965 /* Pods-WalkWithMe.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CURRENT_PROJECT_VERSION = 1;

@@ -1,29 +1,32 @@
-# Uncomment the next line to define a global platform for your project
-# platform :ios, '9.0'
+# You Podfile should look similar to this file. Whether you use_frameworks! or not, the following configuration should work.
+#
+# However if you DO NOT use_frameworks! and you prefer to install pods instead of
+# dragging the AirMaps directory into your project, refer to the comments below (steps 1~4)
+
+source 'https://github.com/CocoaPods/Specs.git'
+# specific your target ios version here
+platform :ios, '10.0'
+use_frameworks!
 
 target 'WalkWithMe' do
-  # Uncomment the next line if you're using Swift or would like to use dynamic frameworks
-  # use_frameworks!
-
   pod 'React', path: '../node_modules/react-native', :subspecs => [
-      'Core',
-      'RCTActionSheet',
-      'RCTAnimation',
-      'RCTGeolocation',
-      'RCTImage',
-      'RCTLinkingIOS',
-      'RCTNetwork',
-      'RCTSettings',
-      'RCTText',
-      'RCTVibration',
-      'RCTWebSocket'
-    ]
+    'Core',
+    'RCTActionSheet',
+    'RCTGeolocation',
+    'RCTImage',
+    'RCTLinkingIOS',
+    'RCTNetwork',
+    'RCTSettings',
+    'RCTText',
+    'RCTVibration',
+    'RCTWebSocket'
+  ]
 
-    pod 'GoogleMaps'
+  pod 'GoogleMaps'
 
-  target 'WalkWithMeTests' do
-    inherit! :search_paths
-    # Pods for testing
-  end
-
+  # add if you have a subproject like <app>Tests
+  #target '<put_your_app_subproject_name_here>' do
+  #  inherit! :search_paths
+  #  pod 'GoogleMaps'
+  #end
 end

@@ -20,6 +20,8 @@
 
   jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index.ios" fallbackResource:nil];
 
+  [GMSServices provideAPIKey:@"AIzaSyDUWVHvYA-psNWSTrpwIFlLM84soy3PxzA"];
+
   RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
                                                       moduleName:@"WalkWithMe"
                                                initialProperties:nil
