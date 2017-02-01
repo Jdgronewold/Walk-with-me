@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import FBSDK from 'react-native-fbsdk';
 
-const { LoginManager } = FBSDK;
+const { LoginButton, AccessToken } = FBSDK;
 
 // Initialize Firebase
 const firebaseConfig = {
@@ -27,25 +27,28 @@ const firebaseConfig = {
 
 const firebaseApp = firebase.initializeApp(firebaseConfig);
 
-LoginManager.logInWithReadPermissions(['public_profile']).then(
-  function(result) {
-    if (result.isCancelled) {
-      alert('Login was cancelled');
-    } else {
-      alert('Login was successful with permissions: '
-        + result.grantedPermissions.toString());
-    }
-  },
-  function(error) {
-    alert('Login failed with error: ' + error);
-  }
-);
-
 export default class WalkWithMe extends Component {
 
   render() {
     return (
       <View style={styles.container}>
+        <LoginButton
+          onLoginFinished={
+            (error, result) => {
+              if (error) {
+                alert("login has error: " + result.error);
+              } else if (result.isCancelled) {
+                alert("login is cancelled.");
+              } else {
+                AccessToken.getCurrentAccessToken().then(
+                  (data) => {
+                    alert(data.accessToken.toString());
+                  }
+                );
+              }
+            }
+          }
+          onLogoutFinished={() => alert("logout.")}/>
         <Text style={styles.instructions}>
           To get started, edit index.ios.js
         </Text>
