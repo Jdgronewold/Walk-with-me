@@ -12,6 +12,9 @@ import {
   Text,
   View
 } from 'react-native';
+import FBSDK from 'react-native-fbsdk';
+
+const { LoginManager } = FBSDK;
 
 // Initialize Firebase
 const firebaseConfig = {
@@ -23,57 +26,26 @@ const firebaseConfig = {
 };
 
 const firebaseApp = firebase.initializeApp(firebaseConfig);
-var provider = new firebase.auth.FacebookAuthProvider();
-provider.addScope('public_profile');
+
+LoginManager.logInWithReadPermissions(['public_profile']).then(
+  function(result) {
+    if (result.isCancelled) {
+      alert('Login was cancelled');
+    } else {
+      alert('Login was successful with permissions: '
+        + result.grantedPermissions.toString());
+    }
+  },
+  function(error) {
+    alert('Login failed with error: ' + error);
+  }
+);
 
 export default class WalkWithMe extends Component {
-  handleLogin(e){
-    console.log("this is working");
-    console.log(e);
-    firebase.auth().signInWithRedirect(provider);
-  }
-
-  handleLogout(e){
-    firebase.auth().signOut().then(function() {
-    // Sign-out successful.
-    }, function(error) {
-      // An error happened.
-    });
-  }
-
-  componentDidMount(){
-    firebase.auth().getRedirectResult()
-      .then(function(result) {
-        if (result.credential) {
-          // This gives you a Facebook Access Token. You can use it to access the Facebook API.
-          var token = result.credential.accessToken;
-          this.setState({token: token});
-          // ...
-        }
-        // The signed-in user info.
-        var user = result.user;
-        this.setState({user: user});
-      }).catch(function(error) {
-        console.log(error);
-        // Handle Errors here.
-        var errorCode = error.code;
-        var errorMessage = error.message;
-        // The email of the user's account used.
-        var email = error.email;
-        // The firebase.auth.AuthCredential type that was used.
-        var credential = error.credential;
-        // ...
-      });
-  }
 
   render() {
     return (
       <View style={styles.container}>
-        <button color="#841584" onPress={this.handleLogin}>Login with Facebook</button>
-        <Text style={styles.welcome}>
-          Your name is {JSON.stringify(this.state.user)}
-          Welcome to React Native!
-        </Text>
         <Text style={styles.instructions}>
           To get started, edit index.ios.js
         </Text>
