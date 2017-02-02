@@ -16,7 +16,7 @@ import {
 import FBSDK from 'react-native-fbsdk';
 import Login from './components/login';
 
-const { LoginButton, AccessToken } = FBSDK;
+const { LoginButton, AccessToken, GraphRequest, GraphRequestManager, LoginManager} = FBSDK;
 
 // Initialize Firebase
 const firebaseConfig = {
