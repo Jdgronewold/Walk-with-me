@@ -11,6 +11,12 @@ import BasicMap from './basic_map.js';
 const { LoginButton, AccessToken } = FBSDK;
 
 class Login extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      position: ""
+    };
+  }
   render() {
     return (
       <View style={styles.container}>
@@ -25,13 +31,15 @@ class Login extends Component {
               } else {
                 AccessToken.getCurrentAccessToken().then(
                   (data) => {
-                    console.log(data);
-                    this.props.navigator.push({
-                      component: BasicMap,
-                      title: 'map'
-                    });
-                  }
-                );
+                    return data;
+                  }).then( () => {
+                  console.log(this.state.position);
+                  this.props.navigator.push({
+                    component: BasicMap,
+                    title: 'map',
+                    passProps: { position: this.state.position }
+                  });
+                });
               }
             }
           }
