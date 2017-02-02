@@ -12,6 +12,7 @@
 /tmp/*
 !/log/.keep
 !/tmp/.keep
+/FacebookSDKs
 
 # Ignore Byebug command history file.
 .byebug_history
