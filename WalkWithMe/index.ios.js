@@ -40,14 +40,10 @@ export default class WalkWithMe extends Component {
               } else if (result.isCancelled) {
                 alert("login is cancelled.");
               } else {
-                AccessToken.getCurrentAccessToken().then(
-                  (data) => {
-                    alert(data.accessToken.toString());
+
                   }
-                );
               }
             }
-          }
           onLogoutFinished={() => alert("logout.")}/>
         <Text style={styles.instructions}>
           To get started, edit index.ios.js
