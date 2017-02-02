@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import FBSDK from 'react-native-fbsdk';
 
-const { LoginButton, AccessToken } = FBSDK;
+const { LoginButton, AccessToken, GraphRequest, GraphRequestManager, LoginManager} = FBSDK;
 
 // Initialize Firebase
 const firebaseConfig = {
@@ -40,11 +40,42 @@ export default class WalkWithMe extends Component {
               } else if (result.isCancelled) {
                 alert("login is cancelled.");
               } else {
+                // AccessToken.getCurrentAccessToken().then(
+                //   (data) => {
+                //     alert(data.accessToken.toString());
+                //   }
+                // );
                 AccessToken.getCurrentAccessToken().then(
                   (data) => {
-                    alert(data.accessToken.toString());
-                  }
-                );
+                    let accessToken = data.accessToken;
+                    alert(accessToken.toString());
+                    const responseInfoCallback = (error, result) => {
+                      if(error){
+                        console.log(error);
+                        alert('Error fetching data: ' + error.toString());
+                      } else {
+                        console.log(result);
+                        if(result.gender === 'male'){
+                          LoginManager.logOut();
+                          alert('Sorry, only women are currently allowed on Walk With Me.');
+                        }
+                        alert('Success fetching data: ' + result.toString());
+                      }
+                    };
+                    const infoRequest = new GraphRequest(
+                      '/me',
+                      {
+                        accessToken: accessToken,
+                        parameters: {
+                          fields: {
+                            string: 'name, gender'
+                          }
+                        }
+                      },
+                      responseInfoCallback
+                    );
+                    new GraphRequestManager().addRequest(infoRequest).start();
+                  });
               }
             }
           }
