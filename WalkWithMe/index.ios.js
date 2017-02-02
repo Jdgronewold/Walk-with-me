@@ -31,6 +31,15 @@ const firebaseApp = firebase.initializeApp(firebaseConfig);
 export default class WalkWithMe extends Component {
 
   render() {
+    return (
+      <NavigatorIOS
+        initialRoute={{
+          component: Login,
+          title: 'Login'
+        }}
+        style={{flex: 1}}
+      />
+    );
   }
 }
 
