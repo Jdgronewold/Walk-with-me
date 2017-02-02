@@ -24,23 +24,33 @@ class BasicMap extends React.Component {
    super(props);
 
    this.state = {
-     position: 'unknown'
+     position: 'unknown',
+     markers: []
    };
  }
 
  componentDidMount() {
    navigator.geolocation.getCurrentPosition(
      (position) => {
+       debugger
        const initialPosition = JSON.stringify(position);
-       this.setState({position});
+       const {latitude, longitude} = position.coords;
+       const LatLng = { latitude, longitude };
+       const selfMarker = {
+         latlng: LatLng,
+         title: "Your Current Position"
+       };
+       const markers = Object.assign([], this.state.markers);
+       markers.push(selfMarker);
+       this.setState({position: LatLng, markers: markers});
      },
      (geoError) => alert(JSON.stringify(geoError)),
      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
    );
  }
 
-
 render() {
+  console.log(this.state);
   if (this.state.position === "unknown") {
     return (
       <View style={{ flex: 1 }}></View>
@@ -53,12 +63,20 @@ render() {
             provider={PROVIDER_GOOGLE}
             style={styles.map}
             initialRegion={{
-              latitude: this.state.position.coords.latitude,
-              longitude: this.state.position.coords.longitude,
+              latitude: this.state.position.latitude,
+              longitude: this.state.position.longitude,
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             }}
-          />
+          >
+          {this.state.markers.map( (marker, idx) => (
+            <MapView.Marker
+            coordinate={marker.latlng}
+            title={marker.title}
+            key={idx}
+            />
+          ))}
+          </MapView>
         </View>
       </View>
     );

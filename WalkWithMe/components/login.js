@@ -3,7 +3,8 @@ import {
   AppRegistry,
   StyleSheet,
   Text,
-  View
+  View,
+  AsyncStorage
 } from 'react-native';
 import FBSDK from 'react-native-fbsdk';
 import BasicMap from './basic_map.js';
@@ -23,7 +24,6 @@ class Login extends Component {
         <LoginButton
           onLoginFinished={
             (error, result) => {
-              console.log(result);
               if (error) {
                 alert("login has error: " + result.error);
               } else if (result.isCancelled) {
