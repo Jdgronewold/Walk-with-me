@@ -39,6 +39,12 @@ class Login extends Component {
     this.checkLogin();
     return (
       <View style={styles.container}>
+        <Text style={styles.instructions}>
+          Welcome to WalkWithMe
+        </Text>
+        <Text style={styles.instructions}>
+          Login with Facebook to get started
+        </Text>
         <LoginButton
           onLoginFinished={
             (error, result) => {
@@ -81,13 +87,6 @@ class Login extends Component {
             }
           }
           onLogoutFinished={() => alert("logout.")}/>
-        <Text style={styles.instructions}>
-          To get started, edit index.ios.js
-        </Text>
-        <Text style={styles.instructions}>
-          Press Cmd+R to reload,{'\n'}
-          Cmd+D or shake for dev menu
-        </Text>
       </View>
     );
   }
