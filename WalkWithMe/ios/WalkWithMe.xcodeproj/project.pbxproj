@@ -1124,7 +1124,7 @@
 					"\"$PODS_CONFIGURATION_BUILD_DIR/React\"",
 					"\"${PODS_ROOT}/GoogleMaps/Base/Frameworks\"",
 					"\"${PODS_ROOT}/GoogleMaps/Maps/Frameworks\"",
-					"~/Desktop/FacebookSDKs-iOS",
+					"~/Documents/FacebookSDK",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1155,7 +1155,7 @@
 					"\"$PODS_CONFIGURATION_BUILD_DIR/React\"",
 					"\"${PODS_ROOT}/GoogleMaps/Base/Frameworks\"",
 					"\"${PODS_ROOT}/GoogleMaps/Maps/Frameworks\"",
-					"~/Desktop/FacebookSDKs-iOS",
+					"~/Documents/FacebookSDK",
 				);
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
