@@ -40,6 +40,12 @@ class Login extends Component {
     this.checkLogin();
     return (
       <View style={styles.container}>
+        <Text style={styles.instructions}>
+          Welcome to WalkWithMe
+        </Text>
+        <Text style={styles.instructions}>
+          Login with Facebook to get started
+        </Text>
         <LoginButton
           onLoginFinished={
             (err, res) => {
