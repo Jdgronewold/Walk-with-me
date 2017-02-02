@@ -9,7 +9,7 @@ import {
 import FBSDK from 'react-native-fbsdk';
 import BasicMap from './basic_map.js';
 
-const { LoginButton, AccessToken } = FBSDK;
+const { LoginButton, AccessToken, GraphRequest, GraphRequestManager, LoginManager} = FBSDK;
 
 class Login extends Component {
   constructor(props) {
@@ -29,17 +29,42 @@ class Login extends Component {
               } else if (result.isCancelled) {
                 alert("login is cancelled.");
               } else {
+                // AccessToken.getCurrentAccessToken().then(
+                //   (data) => {
+                //     alert(data.accessToken.toString());
+                //   }
+                // );
                 AccessToken.getCurrentAccessToken().then(
                   (data) => {
-                    return data;
-                  }).then( () => {
-                  console.log(this.state.position);
-                  this.props.navigator.push({
-                    component: BasicMap,
-                    title: 'map',
-                    passProps: { position: this.state.position }
+                    let accessToken = data.accessToken;
+                    alert(accessToken.toString());
+                    const responseInfoCallback = (error, result) => {
+                      if(error){
+                        console.log(error);
+                        alert('Error fetching data: ' + error.toString());
+                      } else {
+                        console.log(result);
+                        if(result.gender === 'male'){
+                          LoginManager.logOut();
+                          alert('Sorry, only women are currently allowed on Walk With Me.');
+                        }
+                        alert('Success fetching data: ' + result.toString());
+                      }
+                    };
+                    const infoRequest = new GraphRequest(
+                      '/me',
+                      {
+                        accessToken: accessToken,
+                        parameters: {
+                          fields: {
+                            string: 'name, gender'
+                          }
+                        }
+                      },
+                      responseInfoCallback
+                    );
+                    new GraphRequestManager().addRequest(infoRequest).start();
                   });
-                });
               }
             }
           }
