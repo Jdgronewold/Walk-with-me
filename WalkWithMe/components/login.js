@@ -15,10 +15,28 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      position: ""
+      loggedIn: false
     };
+
+    this.checkLogin = this.checkLogin.bind(this);
+  }
+
+  checkLogin() {
+    AccessToken.getCurrentAccessToken().then(
+      (data) => {
+        if (data !== null) {
+          this.props.navigator.push({
+            component: BasicMap,
+            title: 'map',
+            passProps: { position: this.state.position }
+          });
+        }
+      }
+    );
+
   }
   render() {
+    this.checkLogin();
     return (
       <View style={styles.container}>
         <LoginButton
@@ -29,15 +47,9 @@ class Login extends Component {
               } else if (result.isCancelled) {
                 alert("login is cancelled.");
               } else {
-                // AccessToken.getCurrentAccessToken().then(
-                //   (data) => {
-                //     alert(data.accessToken.toString());
-                //   }
-                // );
                 AccessToken.getCurrentAccessToken().then(
                   (data) => {
                     let accessToken = data.accessToken;
-                    alert(accessToken.toString());
                     const responseInfoCallback = (error, result) => {
                       if(error){
                         console.log(error);
@@ -48,7 +60,7 @@ class Login extends Component {
                           LoginManager.logOut();
                           alert('Sorry, only women are currently allowed on Walk With Me.');
                         }
-                        alert('Success fetching data: ' + result.toString());
+                        this.checkLogin();
                       }
                     };
                     const infoRequest = new GraphRequest(
