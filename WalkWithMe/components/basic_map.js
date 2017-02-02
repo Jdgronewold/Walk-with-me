@@ -32,7 +32,6 @@ class BasicMap extends React.Component {
  componentDidMount() {
    navigator.geolocation.getCurrentPosition(
      (position) => {
-       debugger
        const initialPosition = JSON.stringify(position);
        const {latitude, longitude} = position.coords;
        const LatLng = { latitude, longitude };
