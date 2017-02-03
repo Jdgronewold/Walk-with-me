@@ -11,6 +11,7 @@ import {
 
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
+import Polyline from '@mapbox/polyline';
 import { getDirections, getLocation } from './utils';
 
 const { width, height } = Dimensions.get('window');
@@ -29,10 +30,12 @@ class BasicMap extends React.Component {
    this.state = {
      startPosition: {},
      markers: [],
-     endPosition: {}
+     endPosition: {},
+     polylineCoords: []
    };
    this.makeMarker = this.makeMarker.bind(this);
-   this.openSearchModal = this.openSearchModal.bind(this);
+   this._openSearchModal = this._openSearchModal.bind(this);
+   this._createRouteCoordinates = this._createRouteCoordinates.bind(this);
  }
 
  componentDidMount() {
@@ -49,10 +52,9 @@ class BasicMap extends React.Component {
  }
 
 componentDidUpdate() {
+  // might need to also update the markers here if we move the start marker
   if (Object.keys(this.state.endPosition).length !== 0 &&
       Object.keys(this.state.startPosition).length !== 0) {
-        console.log([this.state.startPosition.latitude,
-        this.state.endPosition.longitude]);
         this.map.fitToCoordinates(
           [this.state.startPosition,
           this.state.endPosition],{
@@ -62,18 +64,49 @@ componentDidUpdate() {
       }
 }
 
-openSearchModal() {
-    RNGooglePlaces.openAutocompleteModal()
-    .then((place) => {
-      const endpos = {
-        latitude: place.latitude,
-        longitude: place.longitude
-      };
-      console.log(endpos);
-      this.makeMarker(endpos, "endPosition", "Destination")
+_openSearchModal() {
+  RNGooglePlaces.openAutocompleteModal()
+  .then((place) => {
+    const endpos = {
+      latitude: place.latitude,
+      longitude: place.longitude
+    };
+    this.makeMarker(endpos, "endPosition", "Destination")
+    return place;
+  }).then((place) => {
+    const opts = {
+      fromCoords: this.state.startPosition,
+      toCoords: this.state.endPosition
+    }
+    getDirections(opts)
+    .then(data => this._createRouteCoordinates(data))
+    .then(polylineCoords => {
+      this.setState({polylineCoords})
     })
-    .catch(error => console.log(error.message));  // error is a Javascript Error object
-  }
+  })
+  .catch(error => console.log(error.message));  // error is a Javascript Error object
+}
+
+_createRouteCoordinates(data) {
+   if (data.status !== 'OK') {
+     console.log("Directions did not work");
+     return [];
+   }
+
+   let points = data.routes[0].overview_polyline.points;
+   let steps = Polyline.decode(points);
+   let polylineCoords = [];
+
+   for (let i=0; i < steps.length; i++) {
+     let tempLocation = {
+       latitude : steps[i][0],
+       longitude : steps[i][1]
+     }
+     polylineCoords.push(tempLocation);
+   }
+   return polylineCoords;
+ }
+
 
 
 makeMarker(location, pos, title) {
@@ -82,13 +115,15 @@ makeMarker(location, pos, title) {
     title: title
   };
   const markers = Object.assign([], this.state.markers);
-  markers.pop;
+  if(markers.length > 1) {
+    markers.pop();
+  }
   markers.push(selfMarker);
   this.setState({[pos]: location, markers: markers});
 }
 
 render() {
-  console.log(this.state.startPosition.latitude);
+  console.log(this.state);
   if (Object.keys(this.state.startPosition).length === 0) {
     return (
       <View style={styles.container}></View>
@@ -116,11 +151,16 @@ render() {
             draggable
             />
           ))}
+          <MapView.Polyline
+            coordinates={this.state.polylineCoords}
+            strokeWidth={2}
+            strokeColor="#ba0be0"
+            />
           </MapView>
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.button, styles.bubble}
-              onPress={() => this.openSearchModal()}
+              onPress={() => this._openSearchModal()}
               >
               <Text>Pick a destination</Text>
             </TouchableOpacity>
@@ -130,7 +170,6 @@ render() {
   }
 }
 }
-
 
 
 const styles = StyleSheet.create({
@@ -156,7 +195,7 @@ bubble: {
   },
   buttonContainer: {
     flexDirection: 'column',
-    marginVertical: 20,
+    marginVertical: 40,
     backgroundColor: 'transparent',
   },
 });
