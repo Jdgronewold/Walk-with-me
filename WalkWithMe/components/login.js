@@ -56,7 +56,7 @@ class Login extends Component {
                         alert('Error fetching data: ' + error.toString());
                       } else {
                         console.log(result);
-                        if(result.gender === 'male'){
+                        if(result.gender === 'boop' ){
                           LoginManager.logOut();
                           alert('Sorry, only women are currently allowed on Walk With Me.');
                         }
