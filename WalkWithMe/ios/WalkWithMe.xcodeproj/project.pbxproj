@@ -24,6 +24,7 @@
 		146834051AC3E58100842450 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
 		2C956BFE063C22D15A9E9F2D /* libPods-WalkWithMe.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B23BDD8F763AC90BB9CD0E0 /* libPods-WalkWithMe.a */; };
 		5E9157361DD0AC6A00FF2AA8 /* libRCTAnimation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E9157331DD0AC6500FF2AA8 /* libRCTAnimation.a */; };
+		793A2FA1F53D4259B24A596E /* libRNGooglePlaces.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1566EACF5AE34944925EA573 /* libRNGooglePlaces.a */; };
 		832341BD1AAA6AB300B99B32 /* libRCTText.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 832341B51AAA6A8300B99B32 /* libRCTText.a */; };
 		8E920DEBAF844789A341C9CE /* libAirMaps.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FB50336AD8924D59B9044C2B /* libAirMaps.a */; };
 		94BCE31C6B0746E389A92BC7 /* libRCTFBSDK.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AC9D730B7F0B4713974DB724 /* libRCTFBSDK.a */; };
@@ -240,6 +241,13 @@
 			remoteGlobalIDString = 9350E0F11CE3B0920041D815;
 			remoteInfo = RCTFBSDK;
 		};
+		FD071B6C1E44E38800B529FE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 2FBA0A690FF2490090E5BA3C /* RNGooglePlaces.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 134814201AA4EA6300B7C361;
+			remoteInfo = RNGooglePlaces;
+		};
 		FD7D2A621E419E8300BD3F7F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = CCBDA81C1974453FB43928C9 /* AirMaps.xcodeproj */;
@@ -269,7 +277,9 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = WalkWithMe/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = WalkWithMe/main.m; sourceTree = "<group>"; };
 		146833FF1AC3E56700842450 /* React.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = React.xcodeproj; path = "../node_modules/react-native/React/React.xcodeproj"; sourceTree = "<group>"; };
+		1566EACF5AE34944925EA573 /* libRNGooglePlaces.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNGooglePlaces.a; sourceTree = "<group>"; };
 		204E32D0E2BE0927DBE1ECBD /* Pods-WalkWithMe.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WalkWithMe.debug.xcconfig"; path = "Pods/Target Support Files/Pods-WalkWithMe/Pods-WalkWithMe.debug.xcconfig"; sourceTree = "<group>"; };
+		2FBA0A690FF2490090E5BA3C /* RNGooglePlaces.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = RNGooglePlaces.xcodeproj; path = "../node_modules/react-native-google-places/ios/RNGooglePlaces.xcodeproj"; sourceTree = "<group>"; };
 		4B23BDD8F763AC90BB9CD0E0 /* libPods-WalkWithMe.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-WalkWithMe.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E91572D1DD0AC6500FF2AA8 /* RCTAnimation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTAnimation.xcodeproj; path = "../node_modules/react-native/Libraries/NativeAnimation/RCTAnimation.xcodeproj"; sourceTree = "<group>"; };
 		783CDF3FD12A39343F0D6965 /* Pods-WalkWithMe.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WalkWithMe.release.xcconfig"; path = "Pods/Target Support Files/Pods-WalkWithMe/Pods-WalkWithMe.release.xcconfig"; sourceTree = "<group>"; };
@@ -350,6 +360,7 @@
 				C07894471E428C6500923510 /* FBSDKCoreKit.framework in Frameworks */,
 				94BCE31C6B0746E389A92BC7 /* libRCTFBSDK.a in Frameworks */,
 				2C956BFE063C22D15A9E9F2D /* libPods-WalkWithMe.a in Frameworks */,
+				793A2FA1F53D4259B24A596E /* libRNGooglePlaces.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -505,6 +516,7 @@
 				139FDEE61B06529A00C62182 /* RCTWebSocket.xcodeproj */,
 				CCBDA81C1974453FB43928C9 /* AirMaps.xcodeproj */,
 				FF0C0C47060B41689C960473 /* RCTFBSDK.xcodeproj */,
+				2FBA0A690FF2490090E5BA3C /* RNGooglePlaces.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -560,6 +572,14 @@
 				4B23BDD8F763AC90BB9CD0E0 /* libPods-WalkWithMe.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		FD071B4E1E44E38800B529FE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FD071B6D1E44E38800B529FE /* libRNGooglePlaces.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		FD7D2A5F1E419E8300BD3F7F /* Products */ = {
@@ -732,6 +752,10 @@
 				{
 					ProductGroup = 146834001AC3E56700842450 /* Products */;
 					ProjectRef = 146833FF1AC3E56700842450 /* React.xcodeproj */;
+				},
+				{
+					ProductGroup = FD071B4E1E44E38800B529FE /* Products */;
+					ProjectRef = 2FBA0A690FF2490090E5BA3C /* RNGooglePlaces.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -925,6 +949,13 @@
 			remoteRef = C078942C1E4289D200923510 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
+		FD071B6D1E44E38800B529FE /* libRNGooglePlaces.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libRNGooglePlaces.a;
+			remoteRef = FD071B6C1E44E38800B529FE /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		FD7D2A631E419E8300BD3F7F /* libAirMaps.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -1088,6 +1119,7 @@
 					"$(inherited)",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WalkWithMe.app/WalkWithMe";
@@ -1104,6 +1136,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);

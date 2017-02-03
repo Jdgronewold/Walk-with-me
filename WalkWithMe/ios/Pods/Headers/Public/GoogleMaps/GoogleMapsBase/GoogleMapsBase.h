@@ -1,1 +1,1 @@
-../../../../GoogleMaps/Base/Frameworks/GoogleMapsBase.framework/Versions/A/Headers/GoogleMapsBase.h
+../../../../GoogleMaps/Subspecs/Base/Frameworks/GoogleMapsBase.framework/Versions/A/Headers/GoogleMapsBase.h
