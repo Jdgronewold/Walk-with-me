@@ -18,8 +18,26 @@ class Login extends Component {
     this.state = {
       position: ""
     };
+
+    this.checkLogin = this.checkLogin.bind(this);
   }
+
+  checkLogin() {
+     AccessToken.getCurrentAccessToken().then(
+       (data) => {
+         if (data !== null) {
+           this.props.navigator.push({
+             component: BasicMap,
+             title: 'map',
+             passProps: { position: this.state.position }
+           });
+         }
+       }
+     );
+  }
+
   render() {
+    this.checkLogin();
     return (
       <View style={styles.container}>
         <LoginButton
@@ -48,16 +66,17 @@ class Login extends Component {
                         alert('Success fetching data: ' + result.name);
                         let ref = firebase.database().ref('users/' + result.id);
                         ref.once("value")
-                          .then(function(snapshot) {
-                            let exists = snapshot.exists();
-                            if (exists === false) {
-                              firebase.database().ref('users/' + result.id).set({
-                                name: result.name,
-                                gender: result.gender,
-                                accessToken: accessToken
-                              });
-                            }
-                          });
+                        .then(function(snapshot) {
+                          let exists = snapshot.exists();
+                          if (exists === false) {
+                            firebase.database().ref('users/' + result.id).set({
+                              name: result.name,
+                              gender: result.gender,
+                              accessToken: accessToken
+                            });
+                          }
+                        });
+                        this.checkLogin();
                         }
                       };
                     const infoRequest = new GraphRequest(
@@ -80,13 +99,6 @@ class Login extends Component {
             }
           }
           onLogoutFinished={() => alert("logout.")}/>
-        <Text style={styles.instructions}>
-          To get started, edit index.ios.js
-        </Text>
-        <Text style={styles.instructions}>
-          Press Cmd+R to reload,{'\n'}
-          Cmd+D or shake for dev menu
-        </Text>
       </View>
     );
   }
