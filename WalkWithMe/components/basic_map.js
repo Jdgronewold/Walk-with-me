@@ -6,11 +6,11 @@ import {
   View,
   Navigator,
   Dimensions,
-  TouchableHighlight
+  TouchableOpacity
 } from 'react-native';
 
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
-import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
+import RNGooglePlaces from 'react-native-google-places';
 import { getDirections, getLocation } from './utils';
 
 const { width, height } = Dimensions.get('window');
@@ -32,6 +32,7 @@ class BasicMap extends React.Component {
      endPosition: {}
    };
    this.makeMarker = this.makeMarker.bind(this);
+   this.openSearchModal = this.openSearchModal.bind(this);
  }
 
  componentDidMount() {
@@ -60,6 +61,19 @@ componentDidUpdate() {
           });
       }
 }
+
+openSearchModal() {
+    RNGooglePlaces.openAutocompleteModal()
+    .then((place) => {
+      const endpos = {
+        latitude: place.latitude,
+        longitude: place.longitude
+      };
+      console.log(endpos);
+      this.makeMarker(endpos, "endPosition", "Destination")
+    })
+    .catch(error => console.log(error.message));  // error is a Javascript Error object
+  }
 
 
 makeMarker(location, pos, title) {
@@ -103,68 +117,48 @@ render() {
             />
           ))}
           </MapView>
-          <GooglePlacesAutocomplete
-            placeholder='Enter Location'
-            minLength={2}
-            autoFocus={false}
-            fetchDetails={true}
-            query={{
-              key: 'AIzaSyDUWVHvYA-psNWSTrpwIFlLM84soy3PxzA',
-              language: 'en', // language of the results
-              // types: '(cities)', // default: 'geocode'
-            }}
-            onPress={(data, details = true) => {
-              getLocation(details.place_id).then( (data) => {
-                const endpos = {
-                  latitude: data.result.geometry.location.lat,
-                  longitude: data.result.geometry.location.lng
-                };
-                console.log(endpos);
-                this.makeMarker(endpos, "endPosition", "Destination")
-              })
-            }}
-            styles={{
-              container: {
-                width: width,
-                height: 50
-              },
-              textInputContainer: {
-                backgroundColor: 'rgba(0,0,0,0)',
-                borderTopWidth: 0,
-                borderBottomWidth: 10
-              },
-              textInput: {
-                marginLeft: 0,
-                marginRight: 0,
-                height: 38,
-                color: '#5d5d5d',
-                fontSize: 16
-              },
-              listView: {
-                backgroundColor: 'rgba(255,255,255,1)'
-              },
-              predefinedPlacesDescription: {
-                color: '#1faadb'
-              },
-            }}
-            currentLocation={false}
-            />
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity
+              style={styles.button, styles.bubble}
+              onPress={() => this.openSearchModal()}
+              >
+              <Text>Pick a destination</Text>
+            </TouchableOpacity>
+        </View>
       </View>
     );
   }
 }
 }
 
+
+
 const styles = StyleSheet.create({
  container: {
    ...StyleSheet.absoluteFillObject,
-   top: 65,
-   justifyContent: 'flex-start',
+   justifyContent: 'flex-end',
    alignItems: 'center'
 },
 map: {
   ...StyleSheet.absoluteFillObject,
 },
+bubble: {
+    backgroundColor: 'rgba(255,255,255,0.7)',
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 20,
+  },
+  button: {
+    marginTop: 12,
+    paddingHorizontal: 12,
+    alignItems: 'center',
+    marginHorizontal: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'column',
+    marginVertical: 20,
+    backgroundColor: 'transparent',
+  },
 });
 
 export default BasicMap;

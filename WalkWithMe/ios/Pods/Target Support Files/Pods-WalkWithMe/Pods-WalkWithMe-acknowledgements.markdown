@@ -3,7 +3,36 @@ This application makes use of the following third party libraries:
 
 ## GoogleMaps
 
-Copyright 2016 Google
+If you use the Google Maps SDK for iOS in your application, you must
+include the attribution text as part of a legal notices section in your
+application. Including legal notices as an independent menu item, or as
+part of an "About" menu item, is recommended.
+
+You can get the attribution text by making a call to
+GMSServices.openSourceLicenseInfo().
+
+
+## GooglePlacePicker
+
+If you use the Google Places API for iOS in your application, you must
+include the attribution text as part of a legal notices section in your
+application. Including legal notices as an independent menu item, or as
+part of an "About" menu item, is recommended.
+
+You can get the attribution text by making calls to
+GMSPlacesClient.openSourceLicenseInfo() and GMSServices.openSourceLicenseInfo().
+
+
+## GooglePlaces
+
+If you use the Google Places API for iOS in your application, you must
+include the attribution text as part of a legal notices section in your
+application. Including legal notices as an independent menu item, or as
+part of an "About" menu item, is recommended.
+
+You can get the attribution text by making a call to
+GMSPlacesClient.openSourceLicenseInfo().
+
 
 ## React
 
