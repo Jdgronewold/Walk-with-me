@@ -13,6 +13,7 @@
 #import <React/RCTRootView.h>
 #import <FBSDKCoreKit/FBSDKCoreKit.h>
 
+@import GooglePlaces;
 @import GoogleMaps;
 @implementation AppDelegate
 
@@ -23,7 +24,7 @@
   jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index.ios" fallbackResource:nil];
 
   [GMSServices provideAPIKey:@"AIzaSyDUWVHvYA-psNWSTrpwIFlLM84soy3PxzA"];
-
+  [GMSPlacesClient provideAPIKey:@"AIzaSyDUWVHvYA-psNWSTrpwIFlLM84soy3PxzA"];
   RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
                                                       moduleName:@"WalkWithMe"
                                                initialProperties:nil
