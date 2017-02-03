@@ -68,6 +68,7 @@ makeMarker(location, pos, title) {
     title: title
   };
   const markers = Object.assign([], this.state.markers);
+  markers.pop;
   markers.push(selfMarker);
   this.setState({[pos]: location, markers: markers});
 }
