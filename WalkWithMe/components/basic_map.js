@@ -156,6 +156,7 @@ render() {
             provider={PROVIDER_GOOGLE}
             style={styles.map}
             customMapStyle={mapStyle}
+            showsBuildings={true}
             initialRegion={{
               latitude: this.state.startPosition.latitude,
               longitude: this.state.startPosition.longitude,
