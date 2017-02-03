@@ -36,6 +36,9 @@ class BasicMap extends React.Component {
    this.makeMarker = this.makeMarker.bind(this);
    this._openSearchModal = this._openSearchModal.bind(this);
    this._createRouteCoordinates = this._createRouteCoordinates.bind(this);
+   this._saveRoute = this._saveRoute.bind(this);
+
+   this.routeButton = this.routeButton.bind(this);
  }
 
  componentDidMount() {
@@ -107,7 +110,9 @@ _createRouteCoordinates(data) {
    return polylineCoords;
  }
 
+ _saveRoute(){
 
+ }
 
 makeMarker(location, pos, title) {
   const selfMarker = {
@@ -121,6 +126,20 @@ makeMarker(location, pos, title) {
   markers.push(selfMarker);
   this.setState({[pos]: location, markers: markers});
 }
+
+routeButton(){
+  if (Object.keys(this.state.endPosition).length !== 0) {
+    return(
+      <TouchableOpacity
+        style={styles.button, styles.bubble}
+        onPress={() => this._saveRoute()}
+        >
+        <Text>Set Route</Text>
+      </TouchableOpacity>
+    )
+  }
+}
+
 
 render() {
   console.log(this.state);
@@ -157,6 +176,7 @@ render() {
             strokeColor="#ba0be0"
             />
           </MapView>
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={styles.button, styles.bubble}
@@ -164,8 +184,11 @@ render() {
               >
               <Text>Pick a destination</Text>
             </TouchableOpacity>
-        </View>
+
+            {this.routeButton()}
+          </View>
       </View>
+
     );
   }
 }
@@ -176,17 +199,16 @@ const styles = StyleSheet.create({
  container: {
    ...StyleSheet.absoluteFillObject,
    justifyContent: 'flex-end',
-   alignItems: 'center'
-},
-map: {
-  ...StyleSheet.absoluteFillObject,
-},
-bubble: {
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 20,
+ },
+  map: {
+    ...StyleSheet.absoluteFillObject,
   },
+  bubble: {
+      backgroundColor: 'rgba(255,255,255,0.7)',
+      paddingHorizontal: 18,
+      paddingVertical: 12,
+      borderRadius: 20,
+    },
   button: {
     marginTop: 12,
     paddingHorizontal: 12,
@@ -194,7 +216,8 @@ bubble: {
     marginHorizontal: 10,
   },
   buttonContainer: {
-    flexDirection: 'column',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     marginVertical: 40,
     backgroundColor: 'transparent',
   },
