@@ -6,6 +6,7 @@ import {
   View,
   AsyncStorage
 } from 'react-native';
+import * as firebase from 'firebase';
 import FBSDK from 'react-native-fbsdk';
 import BasicMap from './basic_map.js';
 
@@ -23,34 +24,42 @@ class Login extends Component {
       <View style={styles.container}>
         <LoginButton
           onLoginFinished={
-            (error, result) => {
-              if (error) {
-                alert("login has error: " + result.error);
-              } else if (result.isCancelled) {
+            (err, res) => {
+              if (err) {
+                alert("login has error: " + res.error);
+              } else if (res.isCancelled) {
                 alert("login is cancelled.");
               } else {
-                // AccessToken.getCurrentAccessToken().then(
-                //   (data) => {
-                //     alert(data.accessToken.toString());
-                //   }
-                // );
+
                 AccessToken.getCurrentAccessToken().then(
                   (data) => {
                     let accessToken = data.accessToken;
-                    alert(accessToken.toString());
+                    const credential = firebase.auth.FacebookAuthProvider.credential(data.accessToken);
+
                     const responseInfoCallback = (error, result) => {
                       if(error){
                         console.log(error);
                         alert('Error fetching data: ' + error.toString());
                       } else {
-                        console.log(result);
                         if(result.gender === 'male'){
                           LoginManager.logOut();
                           alert('Sorry, only women are currently allowed on Walk With Me.');
                         }
-                        alert('Success fetching data: ' + result.toString());
-                      }
-                    };
+                        alert('Success fetching data: ' + result.name);
+                        let ref = firebase.database().ref('users/' + result.id);
+                        ref.once("value")
+                          .then(function(snapshot) {
+                            let exists = snapshot.exists();
+                            if (exists === false) {
+                              firebase.database().ref('users/' + result.id).set({
+                                name: result.name,
+                                gender: result.gender,
+                                accessToken: accessToken
+                              });
+                            }
+                          });
+                        }
+                      };
                     const infoRequest = new GraphRequest(
                       '/me',
                       {
@@ -63,7 +72,9 @@ class Login extends Component {
                       },
                       responseInfoCallback
                     );
+                    console.log(firebase.auth().currentUser);
                     new GraphRequestManager().addRequest(infoRequest).start();
+                    return firebase.auth().signInWithCredential(credential);
                   });
               }
             }
