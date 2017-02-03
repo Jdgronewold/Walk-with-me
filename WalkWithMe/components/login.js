@@ -63,17 +63,18 @@ class Login extends Component {
                           LoginManager.logOut();
                           alert('Sorry, only women are currently allowed on Walk With Me.');
                         }
+                        const user = {
+                          name: result.name,
+                          gender: result.gender,
+                          accessToken: accessToken
+                        };
                         alert('Success fetching data: ' + result.name);
                         let ref = firebase.database().ref('users/' + result.id);
                         ref.once("value")
                         .then(function(snapshot) {
                           let exists = snapshot.exists();
                           if (exists === false) {
-                            firebase.database().ref('users/' + result.id).set({
-                              name: result.name,
-                              gender: result.gender,
-                              accessToken: accessToken
-                            });
+                            firebase.database().ref('users/' + result.id).set(user);
                           }
                         });
                         this.checkLogin();
