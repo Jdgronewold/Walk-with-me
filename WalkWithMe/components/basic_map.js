@@ -82,7 +82,11 @@ makeMarker(location, pos, title) {
     title: title
   };
   const markers = Object.assign([], this.state.markers);
-  markers.pop;
+  console.log(markers);
+  if(markers.length > 1) {
+    markers.pop();
+  }
+  console.log(markers);
   markers.push(selfMarker);
   this.setState({[pos]: location, markers: markers});
 }
@@ -156,7 +160,7 @@ bubble: {
   },
   buttonContainer: {
     flexDirection: 'column',
-    marginVertical: 20,
+    marginVertical: 40,
     backgroundColor: 'transparent',
   },
 });
