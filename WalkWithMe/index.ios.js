@@ -37,6 +37,7 @@ export default class WalkWithMe extends Component {
           component: Login,
           title: 'Login'
         }}
+        navigationBarHidden={true}
         style={{flex: 1}}
       />
     );
