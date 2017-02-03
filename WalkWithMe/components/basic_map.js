@@ -6,7 +6,8 @@ import {
   View,
   Navigator,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  Button
 } from 'react-native';
 
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
@@ -33,6 +34,7 @@ class BasicMap extends React.Component {
    };
    this.makeMarker = this.makeMarker.bind(this);
    this.openSearchModal = this.openSearchModal.bind(this);
+   this.routeMatchButtons = this.routeMatchButtons.bind(this);
  }
 
  componentDidMount() {
@@ -87,6 +89,32 @@ makeMarker(location, pos, title) {
   this.setState({[pos]: location, markers: markers});
 }
 
+routeMatchButtons(){
+  let pickButton = <TouchableOpacity
+    style={styles.button, styles.bubble}
+    onPress={() => this.openSearchModal()}
+    >
+    <Text>Pick a destination</Text>
+    </TouchableOpacity>;
+
+  let setButton =
+  if (Object.keys(this.state.endPosition).length === 0) {
+    return (
+      <TouchableOpacity
+        style={styles.button, styles.bubble, styles.active}
+        onPress={() => this.openSearchModal()}
+        >
+        <Text>Pick a destination</Text>
+      </TouchableOpacity>
+    )} else {
+      return (
+        <TouchableOpacity
+          style={}
+        <Button style={styles.setRouteButton} title="Set My Route"></Button>
+      )
+    }
+  }
+
 render() {
   console.log(this.state.startPosition.latitude);
   if (Object.keys(this.state.startPosition).length === 0) {
@@ -117,14 +145,10 @@ render() {
             />
           ))}
           </MapView>
+
           <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.button, styles.bubble}
-              onPress={() => this.openSearchModal()}
-              >
-              <Text>Pick a destination</Text>
-            </TouchableOpacity>
-        </View>
+            {this.routeMatchButtons()}
+          </View>
       </View>
     );
   }
@@ -138,16 +162,21 @@ const styles = StyleSheet.create({
    ...StyleSheet.absoluteFillObject,
    justifyContent: 'flex-end',
    alignItems: 'center'
-},
-map: {
-  ...StyleSheet.absoluteFillObject,
-},
-bubble: {
-    backgroundColor: 'rgba(255,255,255,0.7)',
+  },
+  map: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  bubble: {
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 20,
   },
+  active: {
+    backgroundColor: 'rgba(240, 170, 170, 0.7)',
+  },
+  passive: {
+    backgroundColor: 'rgba(255, 255, 255, 0.7)',
+  }
   button: {
     marginTop: 12,
     paddingHorizontal: 12,
@@ -159,6 +188,9 @@ bubble: {
     marginVertical: 20,
     backgroundColor: 'transparent',
   },
+  setRouteButton: {
+    position: 'absolute',
+  }
 });
 
 export default BasicMap;
