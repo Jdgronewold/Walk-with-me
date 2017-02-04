@@ -13,6 +13,7 @@ import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
 import Polyline from '@mapbox/polyline';
 import { getDirections, getLocation } from './utils';
+import * as firebase from 'firebase';
 
 const { width, height } = Dimensions.get('window');
 
@@ -111,7 +112,15 @@ _createRouteCoordinates(data) {
  }
 
  _saveRoute(){
-
+   let routesRef = firebase.database().ref('routes');
+   let newRouteRef = routesRef.push();
+   console.log(this.props);
+   newRouteRef.set({
+     userID: this.props.user.userID,
+     name: this.props.user.name,
+     startPosition: this.state.startPosition,
+     endPosition: this.state.endPosition
+   })
  }
 
 makeMarker(location, pos, title) {

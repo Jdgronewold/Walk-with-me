@@ -16,7 +16,7 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      position: ""
+      user: {}
     };
 
     this.checkLogin = this.checkLogin.bind(this);
@@ -83,11 +83,15 @@ class Login extends Component {
                         }
 
                         const user = {
+                          userID: result.id,
                           name: result.name,
                           gender: result.gender,
                           accessToken: accessToken
                         };
 
+                        this.setState({
+                          user: user
+                        });
                         let ref = firebase.database().ref('users/' + result.id);
                         ref.once("value")
                         .then(function(snapshot) {
