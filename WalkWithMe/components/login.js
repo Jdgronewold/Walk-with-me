@@ -26,6 +26,7 @@ class Login extends Component {
      AccessToken.getCurrentAccessToken().then(
        (data) => {
          if (data !== null) {
+           console.log(this.props);
            firebase.database().ref('users/' + data.userID).once("value")
            .then( (snapshot) => {
             // Operating on the assumption that if data exists

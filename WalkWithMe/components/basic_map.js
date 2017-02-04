@@ -6,10 +6,11 @@ import {
   View,
   Navigator,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  Image
 } from 'react-native';
 
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
 import Polyline from '@mapbox/polyline';
 import { getDirections, getLocation } from './utils';
@@ -126,6 +127,8 @@ _createRouteCoordinates(data) {
    this._getNearbyRoutes();
  }
 
+
+// fetch nearby routes; get the facebook photos, id, rating here too?
  _getNearbyRoutes() {
    let routesRef = firebase.database().ref('routes');
    const startLat = this.state.startPosition.latitude - 0.01
@@ -238,14 +241,18 @@ render() {
             key={idx}
             />
           ))}
+
           { Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
-            <MapView.Marker
+            <Marker
               coordinate={this.state.nearbyRoutes[key].startPosition}
               key={idx}
               title={this.state.nearbyRoutes[key].name}
-              description={`${key} miles away`}
-              pinColor="#39FF14"
-            />
+            >
+              <View>
+                <Image
+                <Text>{this.state.nearbyRoutes[key].name}</Text>
+              </View>
+            </Marker>
           ))}
           <MapView.Polyline
             coordinates={this.state.polylineCoords}
