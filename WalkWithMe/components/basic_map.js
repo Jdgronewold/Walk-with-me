@@ -142,7 +142,6 @@ routeButton(){
 
 
 render() {
-  console.log(this.state);
   if (Object.keys(this.state.startPosition).length === 0) {
     return (
       <View style={styles.container}></View>
@@ -174,7 +173,7 @@ render() {
           ))}
           <MapView.Polyline
             coordinates={this.state.polylineCoords}
-            strokeWidth={2}
+            strokeWidth={3}
             strokeColor="#ba0be0"
             />
           </MapView>

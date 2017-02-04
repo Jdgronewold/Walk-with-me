@@ -26,14 +26,26 @@ class Login extends Component {
      AccessToken.getCurrentAccessToken().then(
        (data) => {
          if (data !== null) {
-           this.props.navigator.push({
-             component: BasicMap,
-             title: 'map',
-             passProps: { position: this.state.position }
-           });
+           firebase.database().ref('users/' + data.userID).once("value")
+           .then( (snapshot) => {
+            // Operating on the assumption that if data exists
+            // then the user will also exist in the database with all
+            // the appropriate data`
+            console.log("snapshot" + snapshot.val());
+            return snapshot.val();
+          }).then( (user) => {
+            console.log("next promise");
+            console.log("user" + user);
+            this.props.navigator.push({
+              component: BasicMap,
+              title: 'map',
+              passProps: { user: user }
+            });
+          }).catch(err => console.log(err));
          }
        }
      );
+     console.log("Hi from the bottom of checkLogin");
   }
 
   render() {
@@ -69,12 +81,13 @@ class Login extends Component {
                           LoginManager.logOut();
                           alert('Sorry, only women are currently allowed on Walk With Me.');
                         }
+
                         const user = {
                           name: result.name,
                           gender: result.gender,
                           accessToken: accessToken
                         };
-                        alert('Success fetching data: ' + result.name);
+
                         let ref = firebase.database().ref('users/' + result.id);
                         ref.once("value")
                         .then(function(snapshot) {
@@ -83,6 +96,7 @@ class Login extends Component {
                             firebase.database().ref('users/' + result.id).set(user);
                           }
                         });
+                        console.log("hit redirect");
                         this.checkLogin();
                         }
                       };

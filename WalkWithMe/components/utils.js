@@ -1,4 +1,16 @@
+export const getFacebookPhoto = (userInfo) => {
+  var api = `https://graph.facebook.com/v2.3/${userInfo.userId}/picture?width=${200}&redirect=false&access_token=${userInfo.accessToken}`;
 
+  return new Promise((resolve, reject) => {
+    fetch(api)
+    .then((response) => response.json())
+    .then((json) => {
+      resolve(json);
+    }).catch((err) => {
+      reject(err);
+    });
+  });
+};
 
 export const getDirections = (opts) => {
   var fromCoords = opts.fromCoords;
