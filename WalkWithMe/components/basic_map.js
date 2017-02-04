@@ -33,13 +33,16 @@ class BasicMap extends React.Component {
      markers: [],
      endPosition: {},
      polylineCoords: [],
-     nearbyRoutes: {}
+     nearbyRoutes: {},
+     selectRouteEndMarker: [],
+     selectRoutePolylineCoords: []
    };
    this.makeMarker = this.makeMarker.bind(this);
    this._openSearchModal = this._openSearchModal.bind(this);
    this._createRouteCoordinates = this._createRouteCoordinates.bind(this);
    this._saveRoute = this._saveRoute.bind(this);
    this._getNearbyRoutes = this._getNearbyRoutes.bind(this);
+   this._showSelectedRoute =  this._showSelectedRoute.bind(this);
    this.routeButton = this.routeButton.bind(this);
    this.haversine = this.haversine.bind(this);
  }
@@ -116,7 +119,6 @@ _createRouteCoordinates(data) {
  _saveRoute(){
    let routesRef = firebase.database().ref('routes');
    let newRouteRef = routesRef.push(); // What does this do?
-   console.log(this.props);
    newRouteRef.set({
      userID: this.props.user.userID,
      name: this.props.user.name,
@@ -151,6 +153,27 @@ _createRouteCoordinates(data) {
       }
       this.setState({nearbyRoutes: newRoutes})
     })
+}
+
+_showSelectedRoute(location) {
+  debugger
+  const haversineKey = this.haversine(this.state.startPosition, location)
+  if( !(haversineKey === 0 || this.state.nearbyRoutes[haversineKey])) {
+    console.log([haversineKey, this.state.nearbyRoutes[haversineKey]]);
+    const route = this.state.nearbyRoutes[haversineKey];
+    const opts = {
+      fromCoords: route.startPosition,
+      toCoords: route.endPosition
+    }
+    getDirections(opts)
+    .then(data => this._createRouteCoordinates(data))
+    .then(polylineCoords => {
+      this.setState({
+        selectRouteEndMarker: [route.endPosition],
+        selectRoutePolylineCoords: polylineCoords
+      });
+    });
+  }
 }
 
 
@@ -230,6 +253,10 @@ render() {
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             }}
+            onMarkerPress={(e) => {
+              debugger
+              this._showSelectedRoute(e.nativeElement.coordinate)
+            }}
           >
           {this.state.markers.map( (marker, idx) => (
             <MapView.Marker
@@ -241,10 +268,16 @@ render() {
           { Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
             <MapView.Marker
               coordinate={this.state.nearbyRoutes[key].startPosition}
-              key={idx}
+              key={key}
               title={this.state.nearbyRoutes[key].name}
               description={`${key} miles away`}
               pinColor="#39FF14"
+            />
+          ))}
+          {this.state.selectRouteEndMarker.map((endPos) => (
+            <MapView.Marker
+              coordinate={endPos}
+              pinColor={"#39FF14"}
             />
           ))}
           <MapView.Polyline
