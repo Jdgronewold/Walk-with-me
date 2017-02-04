@@ -31,21 +31,19 @@ class Login extends Component {
             // Operating on the assumption that if data exists
             // then the user will also exist in the database with all
             // the appropriate data`
-            console.log("snapshot" + snapshot.val());
             return snapshot.val();
           }).then( (user) => {
-            console.log("next promise");
-            console.log("user" + user);
             this.props.navigator.push({
               component: BasicMap,
               title: 'map',
               passProps: { user: user }
             });
           }).catch(err => console.log(err));
-         }
+        } else {
+          console.log("Data was null, timing seemed to be off.");
+        }
        }
      );
-     console.log("Hi from the bottom of checkLogin");
   }
 
   render() {

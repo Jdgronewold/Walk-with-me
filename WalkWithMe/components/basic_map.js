@@ -32,14 +32,16 @@ class BasicMap extends React.Component {
      startPosition: {},
      markers: [],
      endPosition: {},
-     polylineCoords: []
+     polylineCoords: [],
+     nearbyRoutes: {}
    };
    this.makeMarker = this.makeMarker.bind(this);
    this._openSearchModal = this._openSearchModal.bind(this);
    this._createRouteCoordinates = this._createRouteCoordinates.bind(this);
    this._saveRoute = this._saveRoute.bind(this);
-
+   this._getNearbyRoutes = this._getNearbyRoutes.bind(this);
    this.routeButton = this.routeButton.bind(this);
+   this.haversine = this.haversine.bind(this);
  }
 
  componentDidMount() {
@@ -113,7 +115,7 @@ _createRouteCoordinates(data) {
 
  _saveRoute(){
    let routesRef = firebase.database().ref('routes');
-   let newRouteRef = routesRef.push();
+   let newRouteRef = routesRef.push(); // What does this do?
    console.log(this.props);
    newRouteRef.set({
      userID: this.props.user.userID,
@@ -121,7 +123,63 @@ _createRouteCoordinates(data) {
      startPosition: this.state.startPosition,
      endPosition: this.state.endPosition
    })
+   this._getNearbyRoutes();
  }
+
+ _getNearbyRoutes() {
+   let routesRef = firebase.database().ref('routes');
+   const startLat = this.state.startPosition.latitude - 0.01
+   const endLat = this.state.startPosition.latitude + 0.01
+   routesRef.orderByChild("startPosition/latitude")
+    .startAt(startLat)
+    .endAt(endLat).on('child_added', (data) => {
+
+      const newRoutes = Object.assign({}, this.state.nearbyRoutes);
+      const dist = this.haversine(
+        this.state.startPosition,
+        data.val().startPosition
+      );
+      const allHaversines = Object.keys(newRoutes).map(num => parseInt(num));
+      if (allHaversines.length < 10 ) {
+        newRoutes[dist] = data.val();
+      } else {
+        const max = Math.max(...allHaversines);
+        if (max > dist) {
+          delete newRoutes[max];
+          newRoutes[dist] = data.val();
+        }
+      }
+      this.setState({nearbyRoutes: newRoutes})
+    })
+}
+
+
+haversine(startLocation, testLocation) {
+  function toRad(x) {
+    return x * Math.PI / 180;
+  }
+
+  const lon1 = startLocation.longitude;
+  const lat1 = startLocation.latitude;
+
+  const lon2 = testLocation.longitude;
+  const lat2 = testLocation.latitude;
+
+  const R = 6371; // km
+
+  const x1 = lat2 - lat1;
+  const dLat = toRad(x1);
+  const x2 = lon2 - lon1;
+  const dLon = toRad(x2)
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  let d = R * c;
+
+  d /= 1.60934;
+  return d;
+}
 
 makeMarker(location, pos, title) {
   const selfMarker = {
@@ -135,6 +193,7 @@ makeMarker(location, pos, title) {
   markers.push(selfMarker);
   this.setState({[pos]: location, markers: markers});
 }
+
 
 routeButton(){
   if (Object.keys(this.state.endPosition).length !== 0) {
@@ -177,7 +236,15 @@ render() {
             coordinate={marker.latlng}
             title={marker.title}
             key={idx}
-            draggable
+            />
+          ))}
+          { Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
+            <MapView.Marker
+              coordinate={this.state.nearbyRoutes[key].startPosition}
+              key={idx}
+              title={this.state.nearbyRoutes[key].name}
+              description={`${key} miles away`}
+              pinColor="#39FF14"
             />
           ))}
           <MapView.Polyline
