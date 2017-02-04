@@ -16,24 +16,33 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      position: ""
+      user: {}
     };
 
     this.checkLogin = this.checkLogin.bind(this);
   }
 
   checkLogin() {
-     AccessToken.getCurrentAccessToken().then(
-       (data) => {
-         if (data !== null) {
-           this.props.navigator.push({
-             component: BasicMap,
-             title: 'map',
-             passProps: { position: this.state.position }
-           });
-         }
-       }
-     );
+    AccessToken.getCurrentAccessToken().then(
+          (data) => {
+            if (data !== null) {
+              firebase.database().ref('users/' + data.userID).once("value")
+              .then( (snapshot) => {
+               // Operating on the assumption that if data exists
+               // then the user will also exist in the database with all
+               // the appropriate data`
+               console.log(snapshot.val());
+               return snapshot.val();
+             }).then( (user) => {
+               this.props.navigator.push({
+                 component: BasicMap,
+                 title: 'map',
+                 passProps: { user: user }
+               });
+             });
+            }
+          }
+        );
   }
 
   render() {
@@ -70,11 +79,15 @@ class Login extends Component {
                           alert('Sorry, only women are currently allowed on Walk With Me.');
                         }
                         const user = {
+                          userID: result.id,
                           name: result.name,
                           gender: result.gender,
                           accessToken: accessToken
                         };
-                        alert('Success fetching data: ' + result.name);
+                        this.setState({
+                          user: user
+                        });
+                        // alert('Success fetching data: ' + result.name);
                         let ref = firebase.database().ref('users/' + result.id);
                         ref.once("value")
                         .then(function(snapshot) {
