@@ -23,26 +23,27 @@ class Login extends Component {
   }
 
   checkLogin() {
-    AccessToken.getCurrentAccessToken().then(
-          (data) => {
-            if (data !== null) {
-              firebase.database().ref('users/' + data.userID).once("value")
-              .then( (snapshot) => {
-               // Operating on the assumption that if data exists
-               // then the user will also exist in the database with all
-               // the appropriate data`
-               console.log(snapshot.val());
-               return snapshot.val();
-             }).then( (user) => {
-               this.props.navigator.push({
-                 component: BasicMap,
-                 title: 'map',
-                 passProps: { user: user }
-               });
-             });
-            }
-          }
-        );
+     AccessToken.getCurrentAccessToken().then(
+       (data) => {
+         if (data !== null) {
+           firebase.database().ref('users/' + data.userID).once("value")
+           .then( (snapshot) => {
+            // Operating on the assumption that if data exists
+            // then the user will also exist in the database with all
+            // the appropriate data`
+            return snapshot.val();
+          }).then( (user) => {
+            this.props.navigator.push({
+              component: BasicMap,
+              title: 'map',
+              passProps: { user: user }
+            });
+          }).catch(err => console.log(err));
+        } else {
+          console.log("Data was null, timing seemed to be off.");
+        }
+       }
+     );
   }
 
   render() {
@@ -78,16 +79,17 @@ class Login extends Component {
                           LoginManager.logOut();
                           alert('Sorry, only women are currently allowed on Walk With Me.');
                         }
+
                         const user = {
                           userID: result.id,
                           name: result.name,
                           gender: result.gender,
                           accessToken: accessToken
                         };
+
                         this.setState({
                           user: user
                         });
-                        // alert('Success fetching data: ' + result.name);
                         let ref = firebase.database().ref('users/' + result.id);
                         ref.once("value")
                         .then(function(snapshot) {
@@ -96,6 +98,7 @@ class Login extends Component {
                             firebase.database().ref('users/' + result.id).set(user);
                           }
                         });
+                        console.log("hit redirect");
                         this.checkLogin();
                         }
                       };

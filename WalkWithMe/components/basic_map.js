@@ -32,14 +32,16 @@ class BasicMap extends React.Component {
      startPosition: {},
      markers: [],
      endPosition: {},
-     polylineCoords: []
+     polylineCoords: [],
+     nearbyRoutes: {}
    };
    this.makeMarker = this.makeMarker.bind(this);
    this._openSearchModal = this._openSearchModal.bind(this);
    this._createRouteCoordinates = this._createRouteCoordinates.bind(this);
    this._saveRoute = this._saveRoute.bind(this);
-
+   this._getNearbyRoutes = this._getNearbyRoutes.bind(this);
    this.routeButton = this.routeButton.bind(this);
+   this.haversine = this.haversine.bind(this);
  }
 
  componentDidMount() {
@@ -113,7 +115,7 @@ _createRouteCoordinates(data) {
 
  _saveRoute(){
    let routesRef = firebase.database().ref('routes');
-   let newRouteRef = routesRef.push();
+   let newRouteRef = routesRef.push(); // What does this do?
    console.log(this.props);
    newRouteRef.set({
      userID: this.props.user.userID,
@@ -121,7 +123,63 @@ _createRouteCoordinates(data) {
      startPosition: this.state.startPosition,
      endPosition: this.state.endPosition
    })
+   this._getNearbyRoutes();
  }
+
+ _getNearbyRoutes() {
+   let routesRef = firebase.database().ref('routes');
+   const startLat = this.state.startPosition.latitude - 0.01
+   const endLat = this.state.startPosition.latitude + 0.01
+   routesRef.orderByChild("startPosition/latitude")
+    .startAt(startLat)
+    .endAt(endLat).on('child_added', (data) => {
+
+      const newRoutes = Object.assign({}, this.state.nearbyRoutes);
+      const dist = this.haversine(
+        this.state.startPosition,
+        data.val().startPosition
+      );
+      const allHaversines = Object.keys(newRoutes).map(num => parseInt(num));
+      if (allHaversines.length < 10 ) {
+        newRoutes[dist] = data.val();
+      } else {
+        const max = Math.max(...allHaversines);
+        if (max > dist) {
+          delete newRoutes[max];
+          newRoutes[dist] = data.val();
+        }
+      }
+      this.setState({nearbyRoutes: newRoutes})
+    })
+}
+
+
+haversine(startLocation, testLocation) {
+  function toRad(x) {
+    return x * Math.PI / 180;
+  }
+
+  const lon1 = startLocation.longitude;
+  const lat1 = startLocation.latitude;
+
+  const lon2 = testLocation.longitude;
+  const lat2 = testLocation.latitude;
+
+  const R = 6371; // km
+
+  const x1 = lat2 - lat1;
+  const dLat = toRad(x1);
+  const x2 = lon2 - lon1;
+  const dLon = toRad(x2)
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  let d = R * c;
+
+  d /= 1.60934;
+  return d;
+}
 
 makeMarker(location, pos, title) {
   const selfMarker = {
@@ -135,6 +193,7 @@ makeMarker(location, pos, title) {
   markers.push(selfMarker);
   this.setState({[pos]: location, markers: markers});
 }
+
 
 routeButton(){
   if (Object.keys(this.state.endPosition).length !== 0) {
@@ -151,7 +210,6 @@ routeButton(){
 
 
 render() {
-  console.log(this.state);
   if (Object.keys(this.state.startPosition).length === 0) {
     return (
       <View style={styles.container}></View>
@@ -164,6 +222,8 @@ render() {
             ref={ref => { this.map = ref; }}
             provider={PROVIDER_GOOGLE}
             style={styles.map}
+            customMapStyle={mapStyle}
+            showsBuildings={true}
             initialRegion={{
               latitude: this.state.startPosition.latitude,
               longitude: this.state.startPosition.longitude,
@@ -176,12 +236,20 @@ render() {
             coordinate={marker.latlng}
             title={marker.title}
             key={idx}
-            draggable
+            />
+          ))}
+          { Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
+            <MapView.Marker
+              coordinate={this.state.nearbyRoutes[key].startPosition}
+              key={idx}
+              title={this.state.nearbyRoutes[key].name}
+              description={`${key} miles away`}
+              pinColor="#39FF14"
             />
           ))}
           <MapView.Polyline
             coordinates={this.state.polylineCoords}
-            strokeWidth={2}
+            strokeWidth={3}
             strokeColor="#ba0be0"
             />
           </MapView>
@@ -231,5 +299,192 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
 });
+
+const mapStyle = [
+  {
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#212121"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.icon",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#757575"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#212121"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#757575"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.country",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9e9e9e"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.land_parcel",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.locality",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#bdbdbd"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#757575"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#181818"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#616161"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#1b1b1b"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry.fill",
+    "stylers": [
+      {
+        "color": "#2c2c2c"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#8a8a8a"
+      }
+    ]
+  },
+  {
+    "featureType": "road.arterial",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#373737"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#3c3c3c"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway.controlled_access",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#4e4e4e"
+      }
+    ]
+  },
+  {
+    "featureType": "road.local",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#616161"
+      }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#757575"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#000000"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#3d3d3d"
+      }
+    ]
+  }
+]
 
 export default BasicMap;
