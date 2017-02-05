@@ -26,6 +26,7 @@ class Login extends Component {
      AccessToken.getCurrentAccessToken().then(
        (data) => {
          if (data !== null) {
+           console.log(this.props);
            firebase.database().ref('users/' + data.userID).once("value")
            .then( (snapshot) => {
             // Operating on the assumption that if data exists
@@ -77,6 +78,7 @@ class Login extends Component {
                       } else {
                         if(result.gender === 'boop'){
                           LoginManager.logOut();
+                          firebase.auth().signOut();
                           alert('Sorry, only women are currently allowed on Walk With Me.');
                         }
 
