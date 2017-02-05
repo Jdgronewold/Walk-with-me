@@ -155,10 +155,9 @@ _createRouteCoordinates(data) {
     })
 }
 
-_showSelectedRoute(location) {
-  debugger
-  const haversineKey = this.haversine(this.state.startPosition, location)
-  if( !(haversineKey === 0 || this.state.nearbyRoutes[haversineKey])) {
+_showSelectedRoute(haversineKey) {
+  console.log((haversineKey === 0 || this.state.nearbyRoutes[haversineKey]));
+  if( !(haversineKey === 0 || this.state.nearbyRoutes[haversineKey] === 'undefined')) {
     console.log([haversineKey, this.state.nearbyRoutes[haversineKey]]);
     const route = this.state.nearbyRoutes[haversineKey];
     const opts = {
@@ -253,11 +252,8 @@ render() {
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             }}
-            onMarkerPress={(e) => {
-              debugger
-              this._showSelectedRoute(e.nativeElement.coordinate)
-            }}
           >
+
           {this.state.markers.map( (marker, idx) => (
             <MapView.Marker
             coordinate={marker.latlng}
@@ -265,35 +261,49 @@ render() {
             key={idx}
             />
           ))}
+
           { Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
             <MapView.Marker
               coordinate={this.state.nearbyRoutes[key].startPosition}
               key={key}
               title={this.state.nearbyRoutes[key].name}
-              description={`${key} miles away`}
               pinColor="#39FF14"
-            />
+              onPress={() => {
+                const markerKey = key;
+                this._showSelectedRoute(markerKey);
+              }}>
+
+            </MapView.Marker>
           ))}
-          {this.state.selectRouteEndMarker.map((endPos) => (
+
+          {this.state.selectRouteEndMarker.map((endPos, idx) => (
             <MapView.Marker
               coordinate={endPos}
               pinColor={"#39FF14"}
-            />
+              key={idx}
+              />
           ))}
+
           <MapView.Polyline
             coordinates={this.state.polylineCoords}
             strokeWidth={3}
             strokeColor="#ba0be0"
             />
-          </MapView>
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.button, styles.bubble}
-              onPress={() => this._openSearchModal()}
-              >
-              <Text>Pick a destination</Text>
-            </TouchableOpacity>
+          <MapView.Polyline
+            coordinates={this.state.selectRoutePolylineCoords}
+            strokeWidth={3}
+            strokeColor="#37fdfc"
+            />
+        </MapView>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.button, styles.bubble}
+            onPress={() => this._openSearchModal()}
+            >
+            <Text>Pick a destination</Text>
+          </TouchableOpacity>
 
             {this.routeButton()}
           </View>
