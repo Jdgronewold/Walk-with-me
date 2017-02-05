@@ -34,7 +34,7 @@ class BasicMap extends React.Component {
      endPosition: {},
      polylineCoords: [],
      nearbyRoutes: {},
-     selectRouteEndMarker: [],
+     selectRouteMarkers: [],
      selectRoutePolylineCoords: []
    };
    this.makeMarker = this.makeMarker.bind(this);
@@ -45,6 +45,7 @@ class BasicMap extends React.Component {
    this._showSelectedRoute =  this._showSelectedRoute.bind(this);
    this.routeButton = this.routeButton.bind(this);
    this.haversine = this.haversine.bind(this);
+   this._fitScreen = this._fitScreen.bind(this);
  }
 
  componentDidMount() {
@@ -64,12 +65,7 @@ componentDidUpdate() {
   // might need to also update the markers here if we move the start marker
   if (Object.keys(this.state.endPosition).length !== 0 &&
       Object.keys(this.state.startPosition).length !== 0) {
-        this.map.fitToCoordinates(
-          [this.state.startPosition,
-          this.state.endPosition],{
-            edgePadding: { top: 100, right: 100, bottom: 100, left: 100 },
-            animated: true,
-          });
+        this._fitScreen()
       }
 }
 
@@ -141,24 +137,24 @@ _createRouteCoordinates(data) {
         this.state.startPosition,
         data.val().startPosition
       );
-      const allHaversines = Object.keys(newRoutes).map(num => parseInt(num));
-      if (allHaversines.length < 10 ) {
-        newRoutes[dist] = data.val();
-      } else {
-        const max = Math.max(...allHaversines);
-        if (max > dist) {
-          delete newRoutes[max];
+      if( dist > 0 ) {
+        const allHaversines = Object.keys(newRoutes).map(num => parseInt(num));
+        if (allHaversines.length < 10 ) {
           newRoutes[dist] = data.val();
+        } else {
+          const max = Math.max(...allHaversines);
+          if (max > dist) {
+            delete newRoutes[max];
+            newRoutes[dist] = data.val();
+          }
         }
+        this.setState({nearbyRoutes: newRoutes})
       }
-      this.setState({nearbyRoutes: newRoutes})
     })
 }
 
 _showSelectedRoute(haversineKey) {
-  console.log((haversineKey === 0 || this.state.nearbyRoutes[haversineKey]));
   if( !(haversineKey === 0 || this.state.nearbyRoutes[haversineKey] === 'undefined')) {
-    console.log([haversineKey, this.state.nearbyRoutes[haversineKey]]);
     const route = this.state.nearbyRoutes[haversineKey];
     const opts = {
       fromCoords: route.startPosition,
@@ -168,11 +164,22 @@ _showSelectedRoute(haversineKey) {
     .then(data => this._createRouteCoordinates(data))
     .then(polylineCoords => {
       this.setState({
-        selectRouteEndMarker: [route.endPosition],
+        selectRouteMarkers: [route.startPosition, route.endPosition],
         selectRoutePolylineCoords: polylineCoords
       });
     });
   }
+}
+
+_fitScreen() {
+  let markers = [this.state.startPosition, this.state.endPosition];
+  if (this.state.selectRouteMarkers.length > 0) {
+    markers = markers.concat(this.state.selectRouteMarkers);
+  }
+  this.map.fitToCoordinates( markers,
+    { edgePadding: { top: 100, right: 100, bottom: 100, left: 100 },
+    animated: true,
+    });
 }
 
 
@@ -262,7 +269,8 @@ render() {
             />
           ))}
 
-          { Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
+          {
+            Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
             <MapView.Marker
               coordinate={this.state.nearbyRoutes[key].startPosition}
               key={key}
@@ -272,29 +280,29 @@ render() {
                 const markerKey = key;
                 this._showSelectedRoute(markerKey);
               }}>
-
             </MapView.Marker>
-          ))}
+          ))
+        }
 
-          {this.state.selectRouteEndMarker.map((endPos, idx) => (
-            <MapView.Marker
-              coordinate={endPos}
-              pinColor={"#39FF14"}
-              key={idx}
-              />
-          ))}
-
-          <MapView.Polyline
-            coordinates={this.state.polylineCoords}
-            strokeWidth={3}
-            strokeColor="#ba0be0"
+        {this.state.selectRouteMarkers.map((marker, idx) => (
+          <MapView.Marker
+            coordinate={marker}
+            pinColor={"#37fdfc"}
+            key={idx}
             />
+        ))}
 
-          <MapView.Polyline
-            coordinates={this.state.selectRoutePolylineCoords}
-            strokeWidth={3}
-            strokeColor="#37fdfc"
-            />
+        <MapView.Polyline
+          coordinates={this.state.polylineCoords}
+          strokeWidth={3}
+          strokeColor="#ba0be0"
+        />
+
+        <MapView.Polyline
+          coordinates={this.state.selectRoutePolylineCoords}
+          strokeWidth={3}
+          strokeColor="#37fdfc"
+        />
         </MapView>
 
         <View style={styles.buttonContainer}>
