@@ -37,6 +37,9 @@ class BasicMap extends React.Component {
      selectRouteMarkers: [],
      selectRoutePolylineCoords: []
    };
+
+   // if lodash works in react native we should definitely use
+   // bindAll(this, ...)
    this.makeMarker = this.makeMarker.bind(this);
    this._openSearchModal = this._openSearchModal.bind(this);
    this._createRouteCoordinates = this._createRouteCoordinates.bind(this);
@@ -46,6 +49,8 @@ class BasicMap extends React.Component {
    this.routeButton = this.routeButton.bind(this);
    this.haversine = this.haversine.bind(this);
    this._fitScreen = this._fitScreen.bind(this);
+   this._nearbyRoutesCallback = this._nearbyRoutesCallback.bind(this);
+   this._setListeners = this._setListeners.bind(this);
  }
 
  componentDidMount() {
@@ -114,7 +119,7 @@ _createRouteCoordinates(data) {
 
  _saveRoute(){
    let routesRef = firebase.database().ref('routes');
-   let newRouteRef = routesRef.push(); // What does this do?
+   let newRouteRef = routesRef.push();
    newRouteRef.set({
      userID: this.props.user.userID,
      name: this.props.user.name,
@@ -122,6 +127,7 @@ _createRouteCoordinates(data) {
      endPosition: this.state.endPosition
    })
    this._getNearbyRoutes();
+   this._setListeners();
  }
 
  _getNearbyRoutes() {
@@ -130,27 +136,34 @@ _createRouteCoordinates(data) {
    const endLat = this.state.startPosition.latitude + 0.01
    routesRef.orderByChild("startPosition/latitude")
     .startAt(startLat)
-    .endAt(endLat).on('child_added', (data) => {
+    .endAt(endLat)
+    .on('child_added', this._nearbyRoutesCallback)
+  routesRef.orderByChild("startPosition/latitude")
+   .startAt(startLat)
+   .endAt(endLat)
+   .on('child_removed', this._nearbyRoutesCallback)
+}
 
-      const newRoutes = Object.assign({}, this.state.nearbyRoutes);
-      const dist = this.haversine(
-        this.state.startPosition,
-        data.val().startPosition
-      );
-      if( dist > 0 ) {
-        const allHaversines = Object.keys(newRoutes).map(num => parseInt(num));
-        if (allHaversines.length < 10 ) {
+_nearbyRoutesCallback(data) {
+  console.log(data);
+    const newRoutes = Object.assign({}, this.state.nearbyRoutes);
+    const dist = this.haversine(
+      this.state.startPosition,
+      data.val().startPosition
+    );
+    if( dist > 0 ) {
+      const allHaversines = Object.keys(newRoutes).map(num => parseInt(num));
+      if (allHaversines.length < 10 ) {
+        newRoutes[dist] = data.val();
+      } else {
+        const max = Math.max(...allHaversines);
+        if (max > dist) {
+          delete newRoutes[max];
           newRoutes[dist] = data.val();
-        } else {
-          const max = Math.max(...allHaversines);
-          if (max > dist) {
-            delete newRoutes[max];
-            newRoutes[dist] = data.val();
-          }
         }
-        this.setState({nearbyRoutes: newRoutes})
       }
-    })
+      this.setState({nearbyRoutes: newRoutes})
+    }
 }
 
 _showSelectedRoute(haversineKey) {
@@ -179,7 +192,12 @@ _fitScreen() {
   this.map.fitToCoordinates( markers,
     { edgePadding: { top: 100, right: 100, bottom: 100, left: 100 },
     animated: true,
-    });
+    }
+  );
+}
+
+_setListeners() {
+
 }
 
 
