@@ -42,6 +42,7 @@ class BasicMap extends React.Component {
    this._getNearbyRoutes = this._getNearbyRoutes.bind(this);
    this.routeButton = this.routeButton.bind(this);
    this.haversine = this.haversine.bind(this);
+   this.queryFirebase = this.queryFirebase.bind(this);
  }
 
  componentDidMount() {
@@ -207,7 +208,6 @@ routeButton(){
     )
   }
 }
-
 
 render() {
   if (Object.keys(this.state.startPosition).length === 0) {
