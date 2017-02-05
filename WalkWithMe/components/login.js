@@ -23,27 +23,29 @@ class Login extends Component {
   }
 
   checkLogin() {
-     AccessToken.getCurrentAccessToken().then(
-       (data) => {
-         if (data !== null) {
-           firebase.database().ref('users/' + data.userID).once("value")
-           .then( (snapshot) => {
-            // Operating on the assumption that if data exists
-            // then the user will also exist in the database with all
-            // the appropriate data`
-            return snapshot.val();
-          }).then( (user) => {
-            this.props.navigator.push({
-              component: BasicMap,
-              title: 'map',
-              passProps: { user: user }
-            });
-          }).catch(err => console.log(err));
-        } else {
-          console.log("Data was null, timing seemed to be off.");
+    if (this.props.navigator.navigationContext._currentRoute.title !== "map") {
+      AccessToken.getCurrentAccessToken().then(
+        (data) => {
+          if (data !== null) {
+            firebase.database().ref('users/' + data.userID).once("value")
+            .then( (snapshot) => {
+              // Operating on the assumption that if data exists
+              // then the user will also exist in the database with all
+              // the appropriate data`
+              return snapshot.val();
+            }).then( (user) => {
+              this.props.navigator.push({
+                component: BasicMap,
+                title: 'map',
+                passProps: { user: user }
+              });
+            }).catch(err => console.log(err));
+          } else {
+            console.log("Data was null, timing seemed to be off.");
+          }
         }
-       }
-     );
+      );
+    }
   }
 
   render() {
@@ -77,6 +79,7 @@ class Login extends Component {
                       } else {
                         if(result.gender === 'boop'){
                           LoginManager.logOut();
+                          firebase.auth().signOut();
                           alert('Sorry, only women are currently allowed on Walk With Me.');
                         }
 

@@ -33,16 +33,18 @@ class BasicMap extends React.Component {
      markers: [],
      endPosition: {},
      polylineCoords: [],
-     nearbyRoutes: {}
+     nearbyRoutes: {},
+     selectRouteMarkers: [],
+     selectRoutePolylineCoords: []
    };
    this.makeMarker = this.makeMarker.bind(this);
    this._openSearchModal = this._openSearchModal.bind(this);
    this._createRouteCoordinates = this._createRouteCoordinates.bind(this);
    this._saveRoute = this._saveRoute.bind(this);
    this._getNearbyRoutes = this._getNearbyRoutes.bind(this);
+   this._showSelectedRoute =  this._showSelectedRoute.bind(this);
    this.routeButton = this.routeButton.bind(this);
    this.haversine = this.haversine.bind(this);
-   this.queryFirebase = this.queryFirebase.bind(this);
  }
 
  componentDidMount() {
@@ -62,12 +64,7 @@ componentDidUpdate() {
   // might need to also update the markers here if we move the start marker
   if (Object.keys(this.state.endPosition).length !== 0 &&
       Object.keys(this.state.startPosition).length !== 0) {
-        this.map.fitToCoordinates(
-          [this.state.startPosition,
-          this.state.endPosition],{
-            edgePadding: { top: 100, right: 100, bottom: 100, left: 100 },
-            animated: true,
-          });
+        this._fitScreen()
       }
 }
 
@@ -117,7 +114,6 @@ _createRouteCoordinates(data) {
  _saveRoute(){
    let routesRef = firebase.database().ref('routes');
    let newRouteRef = routesRef.push(); // What does this do?
-   console.log(this.props);
    newRouteRef.set({
      userID: this.props.user.userID,
      name: this.props.user.name,
@@ -140,18 +136,49 @@ _createRouteCoordinates(data) {
         this.state.startPosition,
         data.val().startPosition
       );
-      const allHaversines = Object.keys(newRoutes).map(num => parseInt(num));
-      if (allHaversines.length < 10 ) {
-        newRoutes[dist] = data.val();
-      } else {
-        const max = Math.max(...allHaversines);
-        if (max > dist) {
-          delete newRoutes[max];
+      if( dist > 0 ) {
+        const allHaversines = Object.keys(newRoutes).map(num => parseInt(num));
+        if (allHaversines.length < 10 ) {
           newRoutes[dist] = data.val();
+        } else {
+          const max = Math.max(...allHaversines);
+          if (max > dist) {
+            delete newRoutes[max];
+            newRoutes[dist] = data.val();
+          }
         }
+        this.setState({nearbyRoutes: newRoutes})
       }
-      this.setState({nearbyRoutes: newRoutes})
     })
+}
+
+_showSelectedRoute(haversineKey) {
+  if( !(haversineKey === 0 || this.state.nearbyRoutes[haversineKey] === 'undefined')) {
+    const route = this.state.nearbyRoutes[haversineKey];
+    const opts = {
+      fromCoords: route.startPosition,
+      toCoords: route.endPosition
+    }
+    getDirections(opts)
+    .then(data => this._createRouteCoordinates(data))
+    .then(polylineCoords => {
+      this.setState({
+        selectRouteMarkers: [route.startPosition, route.endPosition],
+        selectRoutePolylineCoords: polylineCoords
+      });
+    });
+  }
+}
+
+_fitScreen() {
+  let markers = [this.state.startPosition, this.state.endPosition];
+  if (this.state.selectRouteMarkers.length > 0) {
+    markers = markers.concat(this.state.selectRouteMarkers);
+  }
+  this.map.fitToCoordinates( markers,
+    { edgePadding: { top: 100, right: 100, bottom: 100, left: 100 },
+    animated: true,
+    });
 }
 
 
@@ -231,6 +258,7 @@ render() {
               longitudeDelta: LONGITUDE_DELTA,
             }}
           >
+
           {this.state.markers.map( (marker, idx) => (
             <MapView.Marker
             coordinate={marker.latlng}
@@ -238,29 +266,50 @@ render() {
             key={idx}
             />
           ))}
-          { Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
+
+          {
+            Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
             <MapView.Marker
               coordinate={this.state.nearbyRoutes[key].startPosition}
-              key={idx}
+              key={key}
               title={this.state.nearbyRoutes[key].name}
-              description={`${key} miles away`}
               pinColor="#39FF14"
-            />
-          ))}
-          <MapView.Polyline
-            coordinates={this.state.polylineCoords}
-            strokeWidth={3}
-            strokeColor="#ba0be0"
-            />
-          </MapView>
+              onPress={() => {
+                const markerKey = key;
+                this._showSelectedRoute(markerKey);
+              }}>
+            </MapView.Marker>
+          ))
+        }
 
-          <View style={styles.buttonContainer}>
-            <TouchableOpacity
-              style={styles.button, styles.bubble}
-              onPress={() => this._openSearchModal()}
-              >
-              <Text>Pick a destination</Text>
-            </TouchableOpacity>
+        {this.state.selectRouteMarkers.map((marker, idx) => (
+          <MapView.Marker
+            coordinate={marker}
+            pinColor={"#37fdfc"}
+            key={idx}
+            />
+        ))}
+
+        <MapView.Polyline
+          coordinates={this.state.polylineCoords}
+          strokeWidth={3}
+          strokeColor="#ba0be0"
+        />
+
+        <MapView.Polyline
+          coordinates={this.state.selectRoutePolylineCoords}
+          strokeWidth={3}
+          strokeColor="#37fdfc"
+        />
+        </MapView>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.button, styles.bubble}
+            onPress={() => this._openSearchModal()}
+            >
+            <Text>Pick a destination</Text>
+          </TouchableOpacity>
 
             {this.routeButton()}
           </View>
