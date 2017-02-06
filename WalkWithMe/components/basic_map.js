@@ -359,11 +359,10 @@ render() {
                 this._showSelectedRoute(markerKey);
               }}>
                 <MapView.Callout tooltip style={styles.customView}>
-                <CustomCallout>
-                  <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
-                </CustomCallout>
-
-        </MapView.Callout>
+                  <CustomCallout>
+                    <Text>{this.state.nearbyRoutes[key].name}</Text>
+                  </CustomCallout>
+                </MapView.Callout>
 
         <View>
           <Image
@@ -416,7 +415,7 @@ render() {
 const styles = StyleSheet.create({
   customView: {
     width: 140,
-    height: 100,
+    height: 140,
   },
  container: {
    ...StyleSheet.absoluteFillObject,
@@ -447,8 +446,12 @@ const styles = StyleSheet.create({
     height: 30,
     width: 30,
     borderRadius: 20,
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: 'rgba(255,255,255,0.7)',
+  },
+  userLargeIcon: {
+    height: 80,
+    width: 80,
   },
 });
 
@@ -640,3 +643,8 @@ const mapStyle = [
 ]
 
 export default BasicMap;
+
+// <Image
+//   style={styles.userLargeIcon}
+//   source={{uri: this.state.nearbyRoutes[key].imgUrl}}
+//   />
