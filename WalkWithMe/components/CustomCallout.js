@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
   },
   amount: {
     flex: 1,
+    alignItems: 'center',
   },
   arrow: {
     backgroundColor: 'transparent',
