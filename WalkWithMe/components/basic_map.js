@@ -6,13 +6,14 @@ import {
   View,
   Navigator,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  Image
 } from 'react-native';
 
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
 import Polyline from '@mapbox/polyline';
-import { getDirections, getLocation } from './utils';
+import { getDirections, getLocation, getFacebookPhoto } from './utils';
 import * as firebase from 'firebase';
 
 const { width, height } = Dimensions.get('window');
@@ -262,7 +263,7 @@ render() {
           >
 
           {this.state.markers.map( (marker, idx) => (
-            <MapView.Marker
+            <Marker
             coordinate={marker.latlng}
             title={marker.title}
             key={idx}
@@ -271,7 +272,7 @@ render() {
 
           {
             Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
-            <MapView.Marker
+            <Marker
               coordinate={this.state.nearbyRoutes[key].startPosition}
               key={key}
               title={this.state.nearbyRoutes[key].name}
@@ -280,12 +281,18 @@ render() {
                 const markerKey = key;
                 this._showSelectedRoute(markerKey);
               }}>
-            </MapView.Marker>
+                <View>
+                  <Image
+                     style={{width: 50, height: 50}}
+                     source={{uri: 'https://facebook.github.io/react/img/logo_og.png'}}
+                   />
+                </View>
+            </Marker>
           ))
         }
 
         {this.state.selectRouteMarkers.map((marker, idx) => (
-          <MapView.Marker
+          <Marker
             coordinate={marker}
             pinColor={"#37fdfc"}
             key={idx}
