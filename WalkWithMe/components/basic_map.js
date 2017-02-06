@@ -15,7 +15,7 @@ import {
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
 import Polyline from '@mapbox/polyline';
-import { getDirections, getLocation, getFacebookPhoto } from './utils';
+import { getDirections, getLocation, getFacebookPhoto, renderIf } from './utils';
 import * as firebase from 'firebase';
 import CustomCallout from './CustomCallout';
 
@@ -56,9 +56,10 @@ class BasicMap extends React.Component {
    this.haversine = this.haversine.bind(this);
    this._fitScreen = this._fitScreen.bind(this);
    this._nearbyRoutesCallback = this._nearbyRoutesCallback.bind(this);
-   this._setListeners = this._setListeners.bind(this);
+   this._setListenersOnNewRoute = this._setListenersOnNewRoute.bind(this);
    this._matchedRoutesCallback = this._matchedRoutesCallback.bind(this);
    this._sendMatchRequest = this._sendMatchRequest.bind(this);
+   this._setListenersOnNewMatchRequest = this._setListenersOnNewMatchRequest.bind(this);
  }
 
  componentDidMount() {
@@ -146,7 +147,7 @@ _createRouteCoordinates(data) {
    })
    this.setState({routeID: newRouteRef.key});
    this._getNearbyRoutes();
-   this._setListeners();
+   this._setListenersOnNewRoute();
  }
 
  _getNearbyRoutes() {
@@ -214,13 +215,11 @@ _fitScreen() {
   );
 }
 
-_setListeners() {
+_setListenersOnNewRoute() {
   let matchedRoutesRef = firebase.database().ref('matchedRoutes');
   matchedRoutesRef.orderByChild("follower/userID")
     .equalTo(this.props.user.userID)
     .on("child_added", this._matchedRoutesCallback)
-  let completedMatchesRef = firebase.database().ref('completedMatches');
-  // completedMatchesRef.orderByChild()
 }
 
 _matchedRoutesCallback(data) {
@@ -234,7 +233,6 @@ _sendMatchRequest() {
                             selectRouteStart
                           )
   const route = this.state.nearbyRoutes[selectHaversine];
-  debugger
   let matchedRoutesRef = firebase.database().ref('matchedRoutes');
   let matchedRouteKey = matchedRoutesRef.push();
   matchedRouteKey.set({
@@ -247,6 +245,22 @@ _sendMatchRequest() {
       routeKey: route.routeKey
     }
   })
+  let routesRef = firebase.database().ref('routes');
+  this._setListenersOnNewMatchRequest()
+}
+
+_setListenersOnNewMatchRequest() {
+  routesRef.off("child_added", this._nearbyRoutesCallback);
+  routesRef.off("child_removed", this._nearbyRoutesCallback);
+  let completedMatchesRef = firebase.database().ref('completedMatches');
+  completedMatchesRef.orderByChild("author/userID")
+    .equalTo(this.props.user.userID)
+    .on("child_added", this._completedMatchCallback);
+  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
+  matchedRoutesRef.orderByChild("author/userID")
+    .equalTo(this.props.user.userID)
+    .on("child_removed", this._rejectedMatchCallback);
+
 }
 
 
@@ -359,27 +373,29 @@ render() {
                   this._showSelectedRoute(markerKey);
                 }}>
                 <MapView.Callout tooltip style={styles.customView}>
-                  <CustomCallout>
-                    <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
-                    <View>
-                      <Image
-                        style={{width: 50, height: 50}}
-                        source={{uri: this.state.nearbyRoutes[key].imgUrl}}
-                        />
-                    </View>
-                  </CustomCallout>
-                </MapView.Callout>
-              </Marker>
-            ))
+
+                <CustomCallout>
+                  <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
+                </CustomCallout>
+
+              </MapView.Callout>
+
+              <View>
+                <Image
+                  style={styles.userIcon}
+                  source={{uri: this.state.nearbyRoutes[key].imgUrl}}
+                  />
+              </View>
+            </Marker>
+          ))
         }
 
-        {this.state.selectRouteMarkers.map((marker, idx) => (
+        {this.state.selectRouteMarkers[1] &&
           <Marker
-            coordinate={marker}
-            pinColor={"#37fdfc"}
-            key={idx}
+            coordinate={this.state.selectRouteMarkers[1]}
+            pinColor={"#37fdfc "}
             />
-        ))}
+        }
 
         <MapView.Polyline
           coordinates={this.state.polylineCoords}
@@ -411,7 +427,7 @@ render() {
 }
 }
 
-///the onPress in the touchable was:
+
 const styles = StyleSheet.create({
   customView: {
     width: 140,
@@ -441,6 +457,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginVertical: 40,
     backgroundColor: 'transparent',
+  },
+  userIcon: {
+    height: 30,
+    width: 30,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.7)',
   },
 });
 
