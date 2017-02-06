@@ -32,16 +32,16 @@ The map will then render both user's routes with the option to approve or deny t
 
 
 ### Technologies
-  - React Native
-    -react-native-maps
-        -Main map screen
-        -Directions via polyline rendering
-    -react-native-fbsdk
-        -FB OAuth
-    -react-native-google-places
-        -Destination search
-  - Firebase
-    -User authentication
-    -Realtime database
+  * React Native
+    * react-native-maps
+      * Main map screen
+      * Directions via polyline rendering
+    * react-native-fbsdk
+      * FB OAuth
+    * react-native-google-places
+      * Destination search
+  * Firebase
+    * User authentication
+    * Realtime database
 
 ### Implementation
