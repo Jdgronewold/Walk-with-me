@@ -55,7 +55,7 @@ class BasicMap extends React.Component {
    this.renderButtons = this.renderButtons.bind(this);
    this.haversine = this.haversine.bind(this);
    this.getRouteByStartAndHaversine = this.getRouteByStartAndHaversine.bind(this);
-   this.getRoutByChildValue = this.getRoutByChildValue.bind(this);
+   this.getRouteByChildValue = this.getRouteByChildValue.bind(this);
    this._openSearchModal = this._openSearchModal.bind(this);
    this._createRouteCoordinates = this._createRouteCoordinates.bind(this);
    this._saveRoute = this._saveRoute.bind(this);
@@ -227,12 +227,11 @@ _showPotentialMatch(data){
       );
       // add the found route so later in _approveMatch don't
       // have to hit db again
-      tempRoutes[matchedHaversine] = route;
-
+      tempRoutes[matchedHaversine] = route.val();
       this.setState({
-        matchedRoutes: true,
+        matchedRoute: true,
         nearbyRoutes: tempRoutes,
-        selectRouteMarkers: [route.startPosition, route.val().endPosition],
+        selectRouteMarkers: [route.val().startPosition, route.val().endPosition],
         selectRoutePolylineCoords: route.val().routePoly,
         matchedRouteKey: data.val().key
       });
@@ -300,7 +299,7 @@ _setListenersOnNewMatchRequest() {
 }
 
 _completedMatchCallback(data){
-  const route = this.getRoutByChildValue('name', data.val().follower.username);
+  const route = this.getRouteByChildValue('name', data.val().follower.username);
   const opts = {
     fromCoords: this.state.startPosition,
     toCoords: route.startPosition
@@ -347,11 +346,15 @@ _approveMatch(){
   matchedRoutesRef.orderByChild("follower/userID")
     .equalTo(this.props.user.userID)
     .on("child_removed", this._alertAuthorIncoming);
-  this.setState({nearbyRoutes: {}})
+
+  const routeStore = this.getRouteByChildValue("startPosition", this.state.selectRouteMarkers[0]);
+  const dist = this.haversine(this.state.startPosition, this.state.selectRouteMarkers[0]);
+  debugger
+  this.setState({nearbyRoutes: {dist: routeStore}})
 
   const route = this.getRouteByStartAndHaversine();
   let completedMatchesRef = firebase.database().ref('completedMatches');
-  let completedMatchKey = matchedRoutesRef.push();
+  let completedMatchKey = completedMatchesRef.push();
   // remember that the current user is the follower here!
   completedMatchKey.set({
     author: {
@@ -369,7 +372,8 @@ _approveMatch(){
 }
 
 _alertAuthorIncoming(){
-  const route = getRouteByStartAndHaversine();
+  const route = this.getRouteByStartAndHaversine();
+  debugger
   Alert.alert(`Success!`, `${route.name} is on her way!`)
 }
 
@@ -416,16 +420,17 @@ getRouteByStartAndHaversine(){
                             this.state.startPosition,
                             selectRouteStart
                           )
+                          debugger
   const route = this.state.nearbyRoutes[selectHaversine];
   return route;
 }
 
-getRoutByChildValue(child, value){
+getRouteByChildValue(child, value){
   const keys = Object.keys(this.state.nearbyRoutes);
   let route;
   keys.forEach( key => {
-    if (this.state.nearbyRoutes.key[child] === value) {
-      route = this.state.nearbyRoutes.key;
+    if (this.state.nearbyRoutes[key][child] === value) {
+      route = this.state.nearbyRoutes[key];
     }
   })
   return route;
@@ -517,7 +522,7 @@ matchButtons(){
 }
 
 renderButtons() {
-  if (this.state.matchedRoutes) {
+  if (this.state.matchedRoute) {
     return (
       this.matchButtons()
     )
@@ -530,6 +535,7 @@ renderButtons() {
 
 
 render() {
+  console.log(this.state.selectRouteMarkers);
   if (Object.keys(this.state.startPosition).length === 0) {
     return (
       <View style={styles.container}></View>
