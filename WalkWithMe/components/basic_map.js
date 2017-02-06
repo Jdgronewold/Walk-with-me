@@ -15,7 +15,7 @@ import {
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
 import Polyline from '@mapbox/polyline';
-import { getDirections, getLocation, getFacebookPhoto } from './utils';
+import { getDirections, getLocation, getFacebookPhoto, renderIf } from './utils';
 import * as firebase from 'firebase';
 import CustomCallout from './CustomCallout';
 
@@ -196,7 +196,7 @@ _showSelectedRoute(haversineKey) {
     .then(polylineCoords => {
       this.setState({
         selectRouteMarkers: [route.startPosition, route.endPosition],
-        selectRoutePolylineCoords: route.polylineCoords
+        selectRoutePolylineCoords: route.routePoly
       });
     });
   }
@@ -361,34 +361,26 @@ render() {
                 <MapView.Callout tooltip style={styles.customView}>
                 <CustomCallout>
                   <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
-                  <TouchableOpacity
-                      onPress={() => {
-                        const markerKey = key
+                </CustomCallout>
 
-                      }}
-                      style={styles.button, styles.bubble}
-                      >
-                      <Text> Match!</Text>
-                </TouchableOpacity>
-              <View>
-                <Image
-                   style={{width: 50, height: 50}}
-                   source={{uri: 'this.state.nearbyRoutes[key].imgUrl'}}
-                 />
-              </View>
-          </CustomCallout>
         </MapView.Callout>
+
+        <View>
+          <Image
+            style={styles.userIcon}
+            source={{uri: this.state.nearbyRoutes[key].imgUrl}}
+            />
+        </View>
        </Marker>
           ))
         }
 
-        {this.state.selectRouteMarkers.map((marker, idx) => (
+        {renderIf(this.state.selectRouteMarkers[1],
           <Marker
-            coordinate={marker}
+            coordinate={this.state.selectRouteMarkers[1]}
             pinColor={"#37fdfc"}
-            key={idx}
             />
-        ))}
+        )}
 
         <MapView.Polyline
           coordinates={this.state.polylineCoords}
@@ -450,6 +442,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginVertical: 40,
     backgroundColor: 'transparent',
+  },
+  userIcon: {
+    height: 30,
+    width: 30,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.7)',
   },
 });
 
