@@ -1,4 +1,4 @@
-## Walk with Me (Development)
+## Walk with Me
 
 ### Background
 
