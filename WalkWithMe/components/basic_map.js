@@ -41,7 +41,9 @@ class BasicMap extends React.Component {
      selectRouteMarkers: [],
      selectRoutePolylineCoords: [],
      matchedRoute: false,
-     routeID: ''
+     disableButtons: false,
+     routeKey: '',
+     matchedRouteKey: ''
    };
 
    // if lodash works in react native we should definitely use
@@ -51,18 +53,27 @@ class BasicMap extends React.Component {
    this.searchButtons = this.searchButtons.bind(this);
    this.matchButtons = this.matchButtons.bind(this);
    this.renderButtons = this.renderButtons.bind(this);
+   this.haversine = this.haversine.bind(this);
+   this.getRouteByStartAndHaversine = this.getRouteByStartAndHaversine.bind(this);
+   this.getRoutByChildValue = this.getRoutByChildValue.bind(this);
    this._openSearchModal = this._openSearchModal.bind(this);
    this._createRouteCoordinates = this._createRouteCoordinates.bind(this);
    this._saveRoute = this._saveRoute.bind(this);
    this._showSelectedRoute =  this._showSelectedRoute.bind(this);
-   this.haversine = this.haversine.bind(this);
    this._fitScreen = this._fitScreen.bind(this);
    this._nearbyRoutesCallback = this._nearbyRoutesCallback.bind(this);
    this._setListenersOnNewRoute = this._setListenersOnNewRoute.bind(this);
    this._matchedRoutesCallback = this._matchedRoutesCallback.bind(this);
    this._sendMatchRequest = this._sendMatchRequest.bind(this);
    this._setListenersOnNewMatchRequest = this._setListenersOnNewMatchRequest.bind(this);
+   this._completedMatchCallback = this._completedMatchCallback.bind(this);
+   this._rejectedMatchCallback = this.rejectedMatchCallback.bind(this);
+   this._approveMatch = this._approveMatch.bind(this);
+   this.denyMatch = this.denyMatch.bind(this);
+   this._alertAuthorIncoming = this._alertAuthorIncoming.bind(this);
  }
+
+
 
  componentDidMount() {
    navigator.geolocation.getCurrentPosition(
@@ -132,21 +143,21 @@ _createRouteCoordinates(data) {
  _saveRoute(){
    let routesRef = firebase.database().ref('routes');
    let newRouteRef = routesRef.push();
-   let imgUrl
+   let imgUrl;
    getFacebookPhoto({userID: this.props.user.userID, accessToken: this.props.user.accessToken}).then(
      (data) => {
        imgUrl = data.data.url;
-       newRouteRef.child('imgUrl').set(imgUrl);
+       newRouteRef.set({
+         userID: this.props.user.userID,
+         name: this.props.user.name,
+         startPosition: this.state.startPosition,
+         endPosition: this.state.endPosition,
+         routeKey: newRouteRef.key,
+         routePoly: this.state.polylineCoords,
+         imgUrl: imgUrl
+       })
      })
-   newRouteRef.set({
-     userID: this.props.user.userID,
-     name: this.props.user.name,
-     startPosition: this.state.startPosition,
-     endPosition: this.state.endPosition,
-     routeKey: newRouteRef.key,
-     routePoly: this.state.polylineCoords
-   })
-   this.setState({routeID: newRouteRef.key});
+   this.setState({routeKey: newRouteRef.key});
    this._setListenersOnNewRoute();
  }
 
@@ -201,13 +212,27 @@ _matchedRoutesCallback(data) {
 }
 
 _showPotentialMatch(data){
+  //get the route out of the db that matches the author's routeKey
+  //can't automatically rely on it being in this.state.nearbyRoutes
+  //but should look there first to optimize things
+  //come back and do that later
   firebase.database().ref('routes/' + data.val().author.routeKey)
     .once("value").then( (route) => {
+      const tempRoutes = Object.assign({}, this.state.nearbyRoutes);
+      const matchedHaversine = this.haversine(
+        this.state.startPosition,
+        route.startPosition
+      );
+      // add the found route so later in _approveMatch don't
+      // have to hit db again
+      tempRoutes[matchedHaversine] = route;
 
       this.setState({
         matchedRoutes: true,
+        nearbyRoutes: tempRoutes,
         selectRouteMarkers: [route.startPosition, route.endPosition],
-        selectRoutePolylineCoords: route.routePoly
+        selectRoutePolylineCoords: route.routePoly,
+        matchedRouteKey: data.val().key
       });
     });
 }
@@ -236,26 +261,24 @@ _fitScreen() {
 }
 
 _sendMatchRequest() {
-  const selectRouteStart = this.state.selectRouteMarkers[0];
-  const selectHaversine = this.haversine(
-                            this.state.startPosition,
-                            selectRouteStart
-                          )
-  const route = this.state.nearbyRoutes[selectHaversine];
+
+  const route = this.getRouteByStartAndHaversine();
   let matchedRoutesRef = firebase.database().ref('matchedRoutes');
   let matchedRouteKey = matchedRoutesRef.push();
   matchedRouteKey.set({
     author: {
       userID: this.props.user.userID,
-      routeKey: this.state.routeID,
-      userName: this.props.user.name
+      routeKey: this.state.routeKey,
+      username: this.props.user.name
     },
     follower: {
       userID: route.userID,
       routeKey: route.routeKey,
-      userName: route.name
-    }
+      username: route.name
+    },
+    key: matchedRouteKey.key
   })
+  this.setState({disableButtons: true})
   this._setListenersOnNewMatchRequest()
 }
 
@@ -271,6 +294,90 @@ _setListenersOnNewMatchRequest() {
   matchedRoutesRef.orderByChild("author/userID")
     .equalTo(this.props.user.userID)
     .on("child_removed", this._rejectedMatchCallback);
+  matchedRoutesRef.off("child_added", this._matchedRoutesCallback);
+}
+
+_completedMatchCallback(data){
+  const route = this.getRoutByChildValue('name', data.val().follower.username);
+  const opts = {
+    fromCoords: this.state.startPosition,
+    toCoords: route.startPosition
+  }
+  getDirections(opts)
+  .then(data => this._createRouteCoordinates(data))
+  .then(polylineCoords => {
+    this.setState({
+      nearbyRoutes: {},
+      selectRouteMarkers: [this.state.startPosition, route.startPosition],
+      selectRoutePolylineCoords: polylineCoords
+    })
+  })
+
+  Alert.alert(
+    'Match Successful!',
+    `Follow the blue line to meet ${data.val().follower.username}`);
+
+  firebase.database().ref('routes/' + data.val().author.routeKey).remove();
+  firebase.database().ref('routes/' + data.val().follower.routeKey).remove();
+  firebase.database().ref('matchedRoutes/' + data.val().matchedRouteKey).remove();
+
+}
+
+_rejectedMatchCallback(data){
+  // Lazy way of doing things, creates extra google requests
+  // Can be optimized
+  Alert.alert(
+    'Match was cancelled',
+    'Would you like to make a new route or continue searching?',
+    [
+      {text: 'New Route', onPress: () => this._openSearchModal()},
+      {text: 'Continue Searching', onPress: () => this._saveRoute()},
+    ]
+  )
+}
+
+_approveMatch(){
+  let routesRef = firebase.database().ref('routes');
+  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
+  routesRef.off("child_added", this._nearbyRoutesCallback);
+  routesRef.off("child_removed", this._nearbyRoutesCallback);
+  matchedRoutesRef.off("child_added", this._matchedRoutesCallback);
+  matchedRoutesRef.orderByChild("follower/userID")
+    .equalTo(this.props.user.userID)
+    .on("child_removed", this._alertAuthorIncoming);
+  this.setState({nearbyRoutes: {}})
+
+  const route = this.getRouteByStartAndHaversine();
+  let completedMatchesRef = firebase.database().ref('completedMatches');
+  let completedMatchKey = matchedRoutesRef.push();
+  // remember that the current user is the follower here!
+  completedMatchKey.set({
+    author: {
+      userID: route.userID,
+      routeKey: route.routeKey,
+      username: route.name
+    },
+    follower: {
+      userID: this.props.user.userID,
+      routeKey: this.state.routeKey,
+      username: this.props.user.name
+    },
+    matchedRouteKey: this.state.matchedRouteKey
+  })
+}
+
+_alertAuthorIncoming(){
+  const route = getRouteByStartAndHaversine();
+  Alert.alert(`Success!`, `${route.name} is on her way!`)
+}
+
+_denyMatch(){
+  firebase.database().ref('matchedRoutes/' + this.state.matchedRouteKey).remove();
+  this.setState({
+    matchedRoute: false,
+    selectRouteMarkers: [],
+    selectRoutePolylineCoords: []
+  })
 }
 
 
@@ -301,6 +408,27 @@ haversine(startLocation, testLocation) {
   return d;
 }
 
+getRouteByStartAndHaversine(){
+  const selectRouteStart = this.state.selectRouteMarkers[0];
+  const selectHaversine = this.haversine(
+                            this.state.startPosition,
+                            selectRouteStart
+                          )
+  const route = this.state.nearbyRoutes[selectHaversine];
+  return route;
+}
+
+getRoutByChildValue(child, value){
+  const keys = Object.keys(this.state.nearbyRoutes);
+  let route;
+  keys.forEach( key => {
+    if (this.state.nearbyRoutes.key[child] === value) {
+      route = this.state.nearbyRoutes.key;
+    }
+  })
+  return route;
+}
+
 makeMarker(location, pos, title) {
   const selfMarker = {
     latlng: location,
@@ -318,6 +446,7 @@ destinationButton() {
   return(
     <TouchableOpacity
       style={styles.button, styles.bubble}
+      disabled={this.state.disableButtons}
       onPress={() => this._openSearchModal()}
       >
       <Text>Pick a destination</Text>
@@ -335,6 +464,7 @@ searchButtons(){
 
           <TouchableOpacity
             style={styles.button, styles.bubble}
+            disabled={this.state.disableButtons}
             onPress={() => this._sendMatchRequest()}
             >
             <Text>Match Route</Text>
@@ -348,6 +478,7 @@ searchButtons(){
 
           <TouchableOpacity
             style={styles.button, styles.bubble}
+            disabled={this.state.disableButtons}
             onPress={() => this._openSearchModal()}
             >
             <Text>Pick a destination</Text>
