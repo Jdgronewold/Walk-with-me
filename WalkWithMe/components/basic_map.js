@@ -201,8 +201,8 @@ _nearbyRoutesCallback(data) {
 }
 
 _matchedRoutesCallback(data) {
-  debugger
-  const authorName = data.val().author.name;
+
+  const authorName = data.val().author.username;
   Alert.alert(
     'You have a Match!',
     `${authorName} would like to walk with you`,
@@ -217,13 +217,13 @@ _showPotentialMatch(data){
   //can't automatically rely on it being in this.state.nearbyRoutes
   //but should look there first to optimize things
   //come back and do that later
+  console.log(data);
   firebase.database().ref('routes/' + data.val().author.routeKey)
     .once("value").then( (route) => {
-      debugger
       const tempRoutes = Object.assign({}, this.state.nearbyRoutes);
       const matchedHaversine = this.haversine(
         this.state.startPosition,
-        route.startPosition
+        route.val().startPosition
       );
       // add the found route so later in _approveMatch don't
       // have to hit db again
@@ -232,8 +232,8 @@ _showPotentialMatch(data){
       this.setState({
         matchedRoutes: true,
         nearbyRoutes: tempRoutes,
-        selectRouteMarkers: [route.startPosition, route.endPosition],
-        selectRoutePolylineCoords: route.routePoly,
+        selectRouteMarkers: [route.startPosition, route.val().endPosition],
+        selectRoutePolylineCoords: route.val().routePoly,
         matchedRouteKey: data.val().key
       });
     });
