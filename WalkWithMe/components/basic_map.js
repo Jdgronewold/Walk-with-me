@@ -7,13 +7,15 @@ import {
   Navigator,
   Dimensions,
   TouchableOpacity,
-  Button
+  Button,
+  Image
+
 } from 'react-native';
 
-import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
 import Polyline from '@mapbox/polyline';
-import { getDirections, getLocation } from './utils';
+import { getDirections, getLocation, getFacebookPhoto } from './utils';
 import * as firebase from 'firebase';
 import CustomCallout from './CustomCallout';
 
@@ -126,8 +128,14 @@ _createRouteCoordinates(data) {
 
  _saveRoute(){
    let routesRef = firebase.database().ref('routes');
-   let newRouteRef = routesRef.push();
-   debugger
+
+   let newRouteRef = routesRef.push(); // What does this do?
+   let imgUrl
+   getFacebookPhoto({userID: this.props.user.userID, accessToken: this.props.user.accessToken}).then(
+     (data) => {
+       imgUrl = data.data.url;
+       newRouteRef.child('imgUrl').set(imgUrl);
+     })
    newRouteRef.set({
      userID: this.props.user.userID,
      name: this.props.user.name,
@@ -315,7 +323,7 @@ render() {
           >
 
           {this.state.markers.map( (marker, idx) => (
-            <MapView.Marker
+            <Marker
             coordinate={marker.latlng}
             title={marker.title}
             key={idx}
@@ -324,7 +332,7 @@ render() {
 
           {
             Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
-            <MapView.Marker
+            <Marker
               coordinate={this.state.nearbyRoutes[key].startPosition}
               key={key}
               title={this.state.nearbyRoutes[key].name}
@@ -334,9 +342,9 @@ render() {
                 this._showSelectedRoute(markerKey);
               }}>
                 <MapView.Callout tooltip style={styles.customView}>
-                  <CustomCallout>
-                    <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
-                    <TouchableOpacity
+                <CustomCallout>
+                  <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
+                  <TouchableOpacity
                       onPress={() => {
                         const markerKey = key
                         this._sendMatchRequest(markerKey)
@@ -344,15 +352,21 @@ render() {
                       style={styles.button, styles.bubble}
                       >
                       <Text> Match!</Text>
-                    </TouchableOpacity>
-                  </CustomCallout>
-                </MapView.Callout>
-            </MapView.Marker>
+                </TouchableOpacity>
+              <View>
+                <Image
+                   style={{width: 50, height: 50}}
+                   source={{uri: 'this.state.nearbyRoutes[key].imgUrl'}}
+                 />
+              </View>
+          </CustomCallout>
+        </MapView.Callout>
+       </Marker>
           ))
         }
 
         {this.state.selectRouteMarkers.map((marker, idx) => (
-          <MapView.Marker
+          <Marker
             coordinate={marker}
             pinColor={"#37fdfc"}
             key={idx}
