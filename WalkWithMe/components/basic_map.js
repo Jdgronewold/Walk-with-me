@@ -361,6 +361,10 @@ render() {
                 <MapView.Callout tooltip style={styles.customView}>
                   <CustomCallout>
                     <Text>{this.state.nearbyRoutes[key].name}</Text>
+                    <Image
+                      style={styles.userLargeIcon}
+                      source={{uri: this.state.nearbyRoutes[key].imgUrl}}
+                      />
                   </CustomCallout>
                 </MapView.Callout>
 
@@ -643,8 +647,3 @@ const mapStyle = [
 ]
 
 export default BasicMap;
-
-// <Image
-//   style={styles.userLargeIcon}
-//   source={{uri: this.state.nearbyRoutes[key].imgUrl}}
-//   />
