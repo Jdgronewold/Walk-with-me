@@ -220,7 +220,7 @@ _setListeners() {
     .equalTo(this.props.user.userID)
     .on("child_added", this._matchedRoutesCallback)
   let completedMatchesRef = firebase.database().ref('completedMatches');
-  completedMatchesRef.orderByChild()
+  // completedMatchesRef.orderByChild()
 }
 
 _matchedRoutesCallback(data) {
@@ -299,7 +299,7 @@ routeButton(){
           style={styles.button, styles.bubble}
           onPress={() => this._sendMatchRequest()}
           >
-          <Text>Set Route</Text>
+          <Text>Match Route</Text>
         </TouchableOpacity>
       )
     } else {
@@ -308,7 +308,7 @@ routeButton(){
           style={styles.button, styles.bubble}
           onPress={() => this._saveRoute()}
           >
-          <Text>Match Route</Text>
+          <Text>Set Route</Text>
         </TouchableOpacity>
       )
     }
