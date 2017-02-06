@@ -35,10 +35,15 @@ class BasicMap extends React.Component {
      markers: [],
      endPosition: {},
      polylineCoords: [],
-     nearbyRoutes: {},
+     nearbyRoutes: {} ,
      selectRouteMarkers: [],
-     selectRoutePolylineCoords: []
+     selectRoutePolylineCoords: [],
+     matchedRoute: false,
+     routeID: ''
    };
+
+   // if lodash works in react native we should definitely use
+   // bindAll(this, ...)
    this.makeMarker = this.makeMarker.bind(this);
    this._openSearchModal = this._openSearchModal.bind(this);
    this._createRouteCoordinates = this._createRouteCoordinates.bind(this);
@@ -48,6 +53,10 @@ class BasicMap extends React.Component {
    this.routeButton = this.routeButton.bind(this);
    this.haversine = this.haversine.bind(this);
    this._fitScreen = this._fitScreen.bind(this);
+   this._nearbyRoutesCallback = this._nearbyRoutesCallback.bind(this);
+   this._setListeners = this._setListeners.bind(this);
+   this._matchedRoutesCallback = this._matchedRoutesCallback.bind(this);
+   this._sendMatchRequest = this._sendMatchRequest.bind(this);
  }
 
  componentDidMount() {
@@ -94,6 +103,7 @@ _openSearchModal() {
   .catch(error => console.log(error.message));  // error is a Javascript Error object
 }
 
+
 _createRouteCoordinates(data) {
    if (data.status !== 'OK') {
      console.log("Directions did not work");
@@ -116,14 +126,19 @@ _createRouteCoordinates(data) {
 
  _saveRoute(){
    let routesRef = firebase.database().ref('routes');
-   let newRouteRef = routesRef.push(); // What does this do?
+   let newRouteRef = routesRef.push();
+   debugger
    newRouteRef.set({
      userID: this.props.user.userID,
      name: this.props.user.name,
      startPosition: this.state.startPosition,
-     endPosition: this.state.endPosition
+     endPosition: this.state.endPosition,
+     routeKey: newRouteRef.key,
+     routePoly: this.state.polylineCoords
    })
+   this.setState({routeID: newRouteRef.key});
    this._getNearbyRoutes();
+   this._setListeners();
  }
 
  _getNearbyRoutes() {
@@ -132,28 +147,33 @@ _createRouteCoordinates(data) {
    const endLat = this.state.startPosition.latitude + 0.01
    routesRef.orderByChild("startPosition/latitude")
     .startAt(startLat)
-    .endAt(endLat).on('child_added', (data) => {
+    .endAt(endLat)
+    .on('child_added', this._nearbyRoutesCallback)
+  routesRef.orderByChild("startPosition/latitude")
+   .startAt(startLat)
+   .endAt(endLat)
+   .on('child_removed', this._nearbyRoutesCallback)
+}
 
-      const newRoutes = Object.assign({}, this.state.nearbyRoutes);
-      const dist = this.haversine(
-        this.state.startPosition,
-        data.val().startPosition
-      );
-      if( dist > 0 ) {
-        const allHaversines = Object.keys(newRoutes).map(num => parseInt(num));
-        if (allHaversines.length < 10 ) {
+_nearbyRoutesCallback(data) {
+    const newRoutes = Object.assign({}, this.state.nearbyRoutes);
+    const dist = this.haversine(
+      this.state.startPosition,
+      data.val().startPosition
+    );
+    if( dist > 0 ) {
+      const allHaversines = Object.keys(newRoutes).map(num => parseInt(num));
+      if (allHaversines.length < 10 ) {
+        newRoutes[dist] = data.val();
+      } else {
+        const max = Math.max(...allHaversines);
+        if (max > dist) {
+          delete newRoutes[max];
           newRoutes[dist] = data.val();
-        } else {
-          const max = Math.max(...allHaversines);
-          if (max > dist) {
-            delete newRoutes[max];
-            newRoutes[dist] = data.val();
-          }
         }
-        this.setState({nearbyRoutes: newRoutes})
-        console.log(this.state.nearbyRoutes);
       }
-    })
+      this.setState({nearbyRoutes: newRoutes})
+    }
 }
 
 _showSelectedRoute(haversineKey) {
@@ -168,7 +188,7 @@ _showSelectedRoute(haversineKey) {
     .then(polylineCoords => {
       this.setState({
         selectRouteMarkers: [route.startPosition, route.endPosition],
-        selectRoutePolylineCoords: polylineCoords
+        selectRoutePolylineCoords: route.polylineCoords
       });
     });
   }
@@ -182,7 +202,37 @@ _fitScreen() {
   this.map.fitToCoordinates( markers,
     { edgePadding: { top: 100, right: 100, bottom: 100, left: 100 },
     animated: true,
-    });
+    }
+  );
+}
+
+_setListeners() {
+  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
+  matchedRoutesRef.orderByChild("follower/userID")
+    .equalTo(this.props.user.userID)
+    .on("child_added", this._matchedRoutesCallback)
+  let completedMatchesRef = firebase.database().ref('completedMatches');
+  completedMatchesRef.orderByChild()
+}
+
+_matchedRoutesCallback(data) {
+  console.log("route matched!");
+}
+
+_sendMatchRequest() {
+  const route = this.state.nearbyRoutes[haversineKey];
+  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
+  let matchedRouteKey = matchedRoutesRef.push();
+  matchedRouteKey.set({
+    author: {
+      userID: this.props.user.userID,
+      routeKey: this.state.routeID
+    },
+    follower: {
+      userID: route.userID,
+      routeKey: route.routeKey
+    }
+  })
 }
 
 
@@ -284,12 +334,19 @@ render() {
                 this._showSelectedRoute(markerKey);
               }}>
                 <MapView.Callout tooltip style={styles.customView}>
-                <CustomCallout>
-                  <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
-                  <Button
-                    title="Match"></Button>
-                </CustomCallout>
-              </MapView.Callout>
+                  <CustomCallout>
+                    <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        const markerKey = key
+                        this._sendMatchRequest(markerKey)
+                      }}
+                      style={styles.button, styles.bubble}
+                      >
+                      <Text> Match!</Text>
+                    </TouchableOpacity>
+                  </CustomCallout>
+                </MapView.Callout>
             </MapView.Marker>
           ))
         }
@@ -332,7 +389,7 @@ render() {
 }
 }
 
-
+///the onPress in the touchable was:
 const styles = StyleSheet.create({
   customView: {
     width: 140,
