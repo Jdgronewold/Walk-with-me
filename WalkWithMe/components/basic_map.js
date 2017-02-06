@@ -301,6 +301,7 @@ _setListenersOnNewMatchRequest() {
 
 _completedMatchCallback(data){
   const route = this.getRouteByChildValue('name', data.val().follower.username);
+  debugger
   const opts = {
     fromCoords: this.state.startPosition,
     toCoords: route.startPosition
@@ -321,6 +322,8 @@ _completedMatchCallback(data){
 
   firebase.database().ref('routes/' + data.val().author.routeKey).remove();
   firebase.database().ref('routes/' + data.val().follower.routeKey).remove();
+  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
+  matchedRoutesRef.off("child_added", this._matchedRoutesCallback);
   firebase.database().ref('matchedRoutes/' + data.val().matchedRouteKey).remove();
 
 }
@@ -347,11 +350,14 @@ _approveMatch(){
   matchedRoutesRef.orderByChild("follower/userID")
     .equalTo(this.props.user.userID)
     .on("child_removed", this._alertAuthorIncoming);
-  this.setState({nearbyRoutes: {}})
+
+  const routeStore = this.getRouteByChildValue("startPosition", this.state.selectRouteMarkers[0]);
+  const dist = this.haversine(this.state.startPosition, this.state.selectRouteMarkers[0]);
+  this.setState({nearbyRoutes: {dist: routeStore}})
 
   const route = this.getRouteByStartAndHaversine();
   let completedMatchesRef = firebase.database().ref('completedMatches');
-  let completedMatchKey = matchedRoutesRef.push();
+  let completedMatchKey = completedMatchesRef.push();
   // remember that the current user is the follower here!
   completedMatchKey.set({
     author: {
@@ -369,7 +375,7 @@ _approveMatch(){
 }
 
 _alertAuthorIncoming(){
-  const route = getRouteByStartAndHaversine();
+  const route = this.getRouteByStartAndHaversine();
   Alert.alert(`Success!`, `${route.name} is on her way!`)
 }
 
@@ -416,6 +422,7 @@ getRouteByStartAndHaversine(){
                             this.state.startPosition,
                             selectRouteStart
                           )
+                          debugger
   const route = this.state.nearbyRoutes[selectHaversine];
   return route;
 }
@@ -424,10 +431,12 @@ getRouteByChildValue(child, value){
   const keys = Object.keys(this.state.nearbyRoutes);
   let route;
   keys.forEach( key => {
-    if (this.state.nearbyRoutes.key[child] === value) {
-      route = this.state.nearbyRoutes.key;
+    console.log(this.state.nearbyRoutes);
+    if (this.state.nearbyRoutes[key][child] === value) {
+      route = this.state.nearbyRoutes[key];
     }
   })
+  debugger
   return route;
 }
 
