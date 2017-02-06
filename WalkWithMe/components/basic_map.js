@@ -15,7 +15,7 @@ import {
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
 import Polyline from '@mapbox/polyline';
-import { getDirections, getLocation, getFacebookPhoto, renderIf } from './utils';
+import { getDirections, getLocation, getFacebookPhoto } from './utils';
 import * as firebase from 'firebase';
 import CustomCallout from './CustomCallout';
 
@@ -228,8 +228,9 @@ _showPotentialMatch(data){
       // add the found route so later in _approveMatch don't
       // have to hit db again
       tempRoutes[matchedHaversine] = route.val();
+      debugger
       this.setState({
-        matchedRoute: true,
+        matchedRoutes: true,
         nearbyRoutes: tempRoutes,
         selectRouteMarkers: [route.val().startPosition, route.val().endPosition],
         selectRoutePolylineCoords: route.val().routePoly,
@@ -300,6 +301,7 @@ _setListenersOnNewMatchRequest() {
 
 _completedMatchCallback(data){
   const route = this.getRouteByChildValue('name', data.val().follower.username);
+  debugger
   const opts = {
     fromCoords: this.state.startPosition,
     toCoords: route.startPosition
@@ -320,6 +322,8 @@ _completedMatchCallback(data){
 
   firebase.database().ref('routes/' + data.val().author.routeKey).remove();
   firebase.database().ref('routes/' + data.val().follower.routeKey).remove();
+  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
+  matchedRoutesRef.off("child_added", this._matchedRoutesCallback);
   firebase.database().ref('matchedRoutes/' + data.val().matchedRouteKey).remove();
 
 }
@@ -349,7 +353,6 @@ _approveMatch(){
 
   const routeStore = this.getRouteByChildValue("startPosition", this.state.selectRouteMarkers[0]);
   const dist = this.haversine(this.state.startPosition, this.state.selectRouteMarkers[0]);
-  debugger
   this.setState({nearbyRoutes: {dist: routeStore}})
 
   const route = this.getRouteByStartAndHaversine();
@@ -373,7 +376,6 @@ _approveMatch(){
 
 _alertAuthorIncoming(){
   const route = this.getRouteByStartAndHaversine();
-  debugger
   Alert.alert(`Success!`, `${route.name} is on her way!`)
 }
 
@@ -429,10 +431,12 @@ getRouteByChildValue(child, value){
   const keys = Object.keys(this.state.nearbyRoutes);
   let route;
   keys.forEach( key => {
+    console.log(this.state.nearbyRoutes);
     if (this.state.nearbyRoutes[key][child] === value) {
       route = this.state.nearbyRoutes[key];
     }
   })
+  debugger
   return route;
 }
 
@@ -579,11 +583,14 @@ render() {
                 }}>
                 <MapView.Callout tooltip style={styles.customView}>
 
-                <CustomCallout>
-                  <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
-                </CustomCallout>
-
-              </MapView.Callout>
+                  <CustomCallout>
+                    <Text>{this.state.nearbyRoutes[key].name}</Text>
+                    <Image
+                      style={styles.userLargeIcon}
+                      source={{uri: this.state.nearbyRoutes[key].imgUrl}}
+                      />
+                  </CustomCallout>
+                </MapView.Callout>
 
               <View>
                 <Image
@@ -628,7 +635,7 @@ render() {
 const styles = StyleSheet.create({
   customView: {
     width: 140,
-    height: 100,
+    height: 140,
   },
  container: {
    ...StyleSheet.absoluteFillObject,
@@ -659,8 +666,13 @@ const styles = StyleSheet.create({
     height: 30,
     width: 30,
     borderRadius: 20,
-    borderWidth: 2,
+    borderWidth: 2.5,
     borderColor: 'rgba(255,255,255,0.7)',
+  },
+  userLargeIcon: {
+    height: 80,
+    width: 80,
+    marginVertical: 5,
   },
 });
 
