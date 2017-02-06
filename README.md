@@ -8,7 +8,7 @@ Why walk alone at night or through isolated neighborhoods when there are other w
 
 Users login through Facebook oAuth to confirm their identities and gender.  Upon successful login, users are directed to a map that shows their current location.
 
-![demo_map_home](images/demo_map_home.png)
+![demo_map_home](./WalkWithMe/docs/images/demo_map_home.png)
 
 In order to find another woman walking in a similar direction, the user must first input her end destination.
 
