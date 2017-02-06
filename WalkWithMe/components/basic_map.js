@@ -6,7 +6,8 @@ import {
   View,
   Navigator,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  Button
 } from 'react-native';
 
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
@@ -14,6 +15,7 @@ import RNGooglePlaces from 'react-native-google-places';
 import Polyline from '@mapbox/polyline';
 import { getDirections, getLocation } from './utils';
 import * as firebase from 'firebase';
+import CustomCallout from './CustomCallout';
 
 const { width, height } = Dimensions.get('window');
 
@@ -148,6 +150,7 @@ _createRouteCoordinates(data) {
           }
         }
         this.setState({nearbyRoutes: newRoutes})
+        console.log(this.state.nearbyRoutes);
       }
     })
 }
@@ -278,6 +281,13 @@ render() {
                 const markerKey = key;
                 this._showSelectedRoute(markerKey);
               }}>
+                <MapView.Callout tooltip style={styles.customView}>
+                <CustomCallout>
+                  <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
+                  <Button
+                    title="Match"></Button>
+                </CustomCallout>
+              </MapView.Callout>
             </MapView.Marker>
           ))
         }
@@ -322,6 +332,10 @@ render() {
 
 
 const styles = StyleSheet.create({
+  customView: {
+    width: 140,
+    height: 100,
+  },
  container: {
    ...StyleSheet.absoluteFillObject,
    justifyContent: 'flex-end',
