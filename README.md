@@ -40,6 +40,12 @@ The map will then render both user's routes with the option to approve or deny t
       * FB OAuth
     * react-native-google-places
       * Destination search
+        * Main map screen
+        * Directions via polyline rendering  
+    * react-native-fbsdk
+        * FB OAuth
+    * react-native-google-places
+        * Destination search
   * Firebase
     * User authentication
     * Realtime database
