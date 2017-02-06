@@ -47,12 +47,14 @@ class BasicMap extends React.Component {
    // if lodash works in react native we should definitely use
    // bindAll(this, ...)
    this.makeMarker = this.makeMarker.bind(this);
+   this.destinationButton = this.destinationButton.bind(this);
+   this.searchButtons = this.searchButtons.bind(this);
+   this.matchButtons = this.matchButtons.bind(this);
+   this.renderButtons = this.renderButtons.bind(this);
    this._openSearchModal = this._openSearchModal.bind(this);
    this._createRouteCoordinates = this._createRouteCoordinates.bind(this);
    this._saveRoute = this._saveRoute.bind(this);
-   this._getNearbyRoutes = this._getNearbyRoutes.bind(this);
    this._showSelectedRoute =  this._showSelectedRoute.bind(this);
-   this.routeButton = this.routeButton.bind(this);
    this.haversine = this.haversine.bind(this);
    this._fitScreen = this._fitScreen.bind(this);
    this._nearbyRoutesCallback = this._nearbyRoutesCallback.bind(this);
@@ -103,7 +105,7 @@ _openSearchModal() {
       this.setState({polylineCoords})
     })
   })
-  .catch(error => console.log(error.message));  // error is a Javascript Error object
+  .catch(error => console.log(error.message));
 }
 
 
@@ -129,8 +131,7 @@ _createRouteCoordinates(data) {
 
  _saveRoute(){
    let routesRef = firebase.database().ref('routes');
-
-   let newRouteRef = routesRef.push(); // What does this do?
+   let newRouteRef = routesRef.push();
    let imgUrl
    getFacebookPhoto({userID: this.props.user.userID, accessToken: this.props.user.accessToken}).then(
      (data) => {
@@ -146,23 +147,26 @@ _createRouteCoordinates(data) {
      routePoly: this.state.polylineCoords
    })
    this.setState({routeID: newRouteRef.key});
-   this._getNearbyRoutes();
    this._setListenersOnNewRoute();
  }
 
- _getNearbyRoutes() {
+ _setListenersOnNewRoute() {
    let routesRef = firebase.database().ref('routes');
    const startLat = this.state.startPosition.latitude - 0.01
    const endLat = this.state.startPosition.latitude + 0.01
    routesRef.orderByChild("startPosition/latitude")
-    .startAt(startLat)
-    .endAt(endLat)
-    .on('child_added', this._nearbyRoutesCallback)
-  routesRef.orderByChild("startPosition/latitude")
    .startAt(startLat)
    .endAt(endLat)
-   .on('child_removed', this._nearbyRoutesCallback)
-}
+   .on('child_added', this._nearbyRoutesCallback);
+   routesRef.orderByChild("startPosition/latitude")
+   .startAt(startLat)
+   .endAt(endLat)
+   .on('child_removed', this._nearbyRoutesCallback);
+   let matchedRoutesRef = firebase.database().ref('matchedRoutes');
+   matchedRoutesRef.orderByChild("follower/userID")
+   .equalTo(this.props.user.userID)
+   .on("child_added", this._matchedRoutesCallback)
+ }
 
 _nearbyRoutesCallback(data) {
     const newRoutes = Object.assign({}, this.state.nearbyRoutes);
@@ -185,20 +189,36 @@ _nearbyRoutesCallback(data) {
     }
 }
 
-_showSelectedRoute(haversineKey) {
-  if( !(haversineKey === 0 || this.state.nearbyRoutes[haversineKey] === 'undefined')) {
-    const route = this.state.nearbyRoutes[haversineKey];
-    const opts = {
-      fromCoords: route.startPosition,
-      toCoords: route.endPosition
-    }
-    getDirections(opts)
-    .then(data => this._createRouteCoordinates(data))
-    .then(polylineCoords => {
+_matchedRoutesCallback(data) {
+  const authorName = data.val().author.name;
+  Alert.alert(
+    'You have a Match!',
+    `${authorName} would like to walk with you`,
+    [
+      {text: 'View Route', onPress: () => this._showPotentialMatch(data)},
+    ]
+  )
+}
+
+_showPotentialMatch(data){
+  firebase.database().ref('routes/' + data.val().author.routeKey)
+    .once("value").then( (route) => {
+
       this.setState({
+        matchedRoutes: true,
         selectRouteMarkers: [route.startPosition, route.endPosition],
         selectRoutePolylineCoords: route.routePoly
       });
+    });
+}
+
+_showSelectedRoute(haversineKey) {
+  if( !(haversineKey === 0 || this.state.nearbyRoutes[haversineKey] === 'undefined')) {
+    const route = this.state.nearbyRoutes[haversineKey];
+
+    this.setState({
+      selectRouteMarkers: [route.startPosition, route.endPosition],
+      selectRoutePolylineCoords: route.routePoly
     });
   }
 }
@@ -215,31 +235,6 @@ _fitScreen() {
   );
 }
 
-_setListenersOnNewRoute() {
-  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
-  matchedRoutesRef.orderByChild("follower/userID")
-    .equalTo(this.props.user.userID)
-    .on("child_added", this._matchedRoutesCallback)
-}
-
-_matchedRoutesCallback(data) {
-  console.log(data.val());
-  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
-  console.log("route matched!");
-  Alert.alert(
-            'You have a Match!',
-            alertMessage,
-            [
-              {text: 'Cancel Match', onPress: () => console.log('Cancel Match')},
-              {text: 'Accept Match', onPress: () => {
-                matchedRoutesRef.orderByChild("author/userID")
-                  .equalTo(this.props.user.userID)
-                  .on('child_added', somerouterenderfunction)
-              }},
-            ]
-          )
-}
-
 _sendMatchRequest() {
   const selectRouteStart = this.state.selectRouteMarkers[0];
   const selectHaversine = this.haversine(
@@ -252,18 +247,20 @@ _sendMatchRequest() {
   matchedRouteKey.set({
     author: {
       userID: this.props.user.userID,
-      routeKey: this.state.routeID
+      routeKey: this.state.routeID,
+      userName: this.props.user.name
     },
     follower: {
       userID: route.userID,
-      routeKey: route.routeKey
+      routeKey: route.routeKey,
+      userName: route.name
     }
   })
-  let routesRef = firebase.database().ref('routes');
   this._setListenersOnNewMatchRequest()
 }
 
 _setListenersOnNewMatchRequest() {
+  let routesRef = firebase.database().ref('routes');
   routesRef.off("child_added", this._nearbyRoutesCallback);
   routesRef.off("child_removed", this._nearbyRoutesCallback);
   let completedMatchesRef = firebase.database().ref('completedMatches');
@@ -274,7 +271,6 @@ _setListenersOnNewMatchRequest() {
   matchedRoutesRef.orderByChild("author/userID")
     .equalTo(this.props.user.userID)
     .on("child_removed", this._rejectedMatchCallback);
-
 }
 
 
@@ -318,28 +314,92 @@ makeMarker(location, pos, title) {
   this.setState({[pos]: location, markers: markers});
 }
 
+destinationButton() {
+  return(
+    <TouchableOpacity
+      style={styles.button, styles.bubble}
+      onPress={() => this._openSearchModal()}
+      >
+      <Text>Pick a destination</Text>
+    </TouchableOpacity>
+  )
+}
 
-routeButton(){
+
+searchButtons(){
   if (Object.keys(this.state.endPosition).length !== 0) {
     if (this.state.selectRouteMarkers.length > 0 ) {
       return(
-        <TouchableOpacity
-          style={styles.button, styles.bubble}
-          onPress={() => this._sendMatchRequest()}
-          >
-          <Text>Match Route</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          {this.destinationButton()}
+
+          <TouchableOpacity
+            style={styles.button, styles.bubble}
+            onPress={() => this._sendMatchRequest()}
+            >
+            <Text>Match Route</Text>
+          </TouchableOpacity>
+      </View>
       )
     } else {
       return(
-        <TouchableOpacity
-          style={styles.button, styles.bubble}
-          onPress={() => this._saveRoute()}
-          >
-          <Text>Set Route</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          {this.destinationButton()}
+
+          <TouchableOpacity
+            style={styles.button, styles.bubble}
+            onPress={() => this._openSearchModal()}
+            >
+            <Text>Pick a destination</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.button, styles.bubble}
+            onPress={() => this._saveRoute()}
+            >
+            <Text>Set Route</Text>
+          </TouchableOpacity>
+        </View>
       )
     }
+  } else {
+    return (
+      <View style={styles.buttonContainer}>
+        { this.destinationButton() }
+      </View>
+    )
+  }
+}
+
+matchButtons(){
+  return(
+    <View style={styles.buttonContainer}>
+      <TouchableOpacity
+        style={styles.button, styles.bubble}
+        onPress={() => this._approveMatch()}
+        >
+        <Text>Approve Match</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button, styles.bubble}
+        onPress={() => this._denyMatch()}
+        >
+        <Text>Deny Match</Text>
+      </TouchableOpacity>
+  </View>
+  )
+}
+
+renderButtons() {
+  if (this.state.matchedRoutes) {
+    return (
+      this.matchButtons()
+    )
+  } else {
+    return (
+      this.searchButtons()
+    )
   }
 }
 
@@ -407,7 +467,7 @@ render() {
         {this.state.selectRouteMarkers[1] &&
           <Marker
             coordinate={this.state.selectRouteMarkers[1]}
-            pinColor={"#37fdfc "}
+            pinColor={this.state.matchedRoute ? "#dd0048" : "#37fdfc"}
             />
         }
 
@@ -420,20 +480,12 @@ render() {
         <MapView.Polyline
           coordinates={this.state.selectRoutePolylineCoords}
           strokeWidth={3}
-          strokeColor="#37fdfc"
+          strokeColor={this.state.matchedRoute ? "#dd0048" : "#37fdfc"}
         />
         </MapView>
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.button, styles.bubble}
-            onPress={() => this._openSearchModal()}
-            >
-            <Text>Pick a destination</Text>
-          </TouchableOpacity>
+        {this.renderButtons()}
 
-            {this.routeButton()}
-          </View>
       </View>
 
     );
