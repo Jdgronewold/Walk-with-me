@@ -353,14 +353,15 @@ render() {
                       >
                       <Text> Match!</Text>
                 </TouchableOpacity>
-              <View>
-                <Image
-                   style={{width: 50, height: 50}}
-                   source={{uri: 'this.state.nearbyRoutes[key].imgUrl'}}
-                 />
-              </View>
           </CustomCallout>
         </MapView.Callout>
+
+        <View>
+          <Image
+            style={styles.userIcon}
+            source={{uri: 'this.state.nearbyRoutes[key].imgUrl'}}
+            />
+        </View>
        </Marker>
           ))
         }
@@ -433,6 +434,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     marginVertical: 40,
     backgroundColor: 'transparent',
+  },
+  userIcon: {
+    height: 30,
+    width: 30,
+    borderRadius: 20,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255,255,255,0.7)',
   },
 });
 
