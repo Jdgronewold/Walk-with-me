@@ -8,8 +8,8 @@ import {
   Dimensions,
   TouchableOpacity,
   Button,
-  Image
-
+  Image,
+  Alert
 } from 'react-native';
 
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
@@ -67,9 +67,9 @@ class BasicMap extends React.Component {
    this._sendMatchRequest = this._sendMatchRequest.bind(this);
    this._setListenersOnNewMatchRequest = this._setListenersOnNewMatchRequest.bind(this);
    this._completedMatchCallback = this._completedMatchCallback.bind(this);
-   this._rejectedMatchCallback = this.rejectedMatchCallback.bind(this);
+   this._rejectedMatchCallback = this._rejectedMatchCallback.bind(this);
    this._approveMatch = this._approveMatch.bind(this);
-   this.denyMatch = this.denyMatch.bind(this);
+   this._denyMatch = this._denyMatch.bind(this);
    this._alertAuthorIncoming = this._alertAuthorIncoming.bind(this);
  }
 
@@ -201,6 +201,7 @@ _nearbyRoutesCallback(data) {
 }
 
 _matchedRoutesCallback(data) {
+  debugger
   const authorName = data.val().author.name;
   Alert.alert(
     'You have a Match!',
@@ -218,6 +219,7 @@ _showPotentialMatch(data){
   //come back and do that later
   firebase.database().ref('routes/' + data.val().author.routeKey)
     .once("value").then( (route) => {
+      debugger
       const tempRoutes = Object.assign({}, this.state.nearbyRoutes);
       const matchedHaversine = this.haversine(
         this.state.startPosition,
@@ -475,14 +477,6 @@ searchButtons(){
       return(
         <View style={styles.buttonContainer}>
           {this.destinationButton()}
-
-          <TouchableOpacity
-            style={styles.button, styles.bubble}
-            disabled={this.state.disableButtons}
-            onPress={() => this._openSearchModal()}
-            >
-            <Text>Pick a destination</Text>
-          </TouchableOpacity>
 
           <TouchableOpacity
             style={styles.button, styles.bubble}
