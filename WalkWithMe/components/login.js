@@ -10,6 +10,7 @@ import {
 import * as firebase from 'firebase';
 import FBSDK from 'react-native-fbsdk';
 import BasicMap from './basic_map.js';
+import Rating from './ratings.js';
 
 const { LoginButton, AccessToken, GraphRequest, GraphRequestManager, LoginManager} = FBSDK;
 
@@ -36,8 +37,8 @@ class Login extends Component {
               return snapshot.val();
             }).then( (user) => {
               this.props.navigator.push({
-                component: BasicMap,
-                title: 'map',
+                component: Rating,
+                title: 'ratings',
                 passProps: { user: user }
               });
             }).catch(err => console.log(err));
@@ -158,7 +159,7 @@ const styles = StyleSheet.create({
     fontFamily: 'GillSans-UltraBold',
     fontSize: 24,
     textAlign: 'center',
-    margin: 10,
+    margin: 10
   },
   instructions: {
     fontFamily: 'Gill Sans',

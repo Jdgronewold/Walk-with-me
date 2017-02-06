@@ -12,7 +12,8 @@ class RatingsForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      starCount: 5
+      starCount: 5,
+      user: this.props.user
     };
     //
     // this.onStarRatingPress = this.onStarRatingPress.bind(this);
@@ -43,18 +44,28 @@ class RatingsForm extends React.Component {
 
   render() {
     return (
-      <View>
-        <Text>How was your walk?</Text>
-        <StarRating
-          disabled={false}
-          maxStars={5}
-          rating={this.state.starCount}
-          selectedStar={(rating) => this.onStarRatingPress(rating) } />
-        <TouchableOpacity
-          style={styles.button, styles.bubble}
-          onPress={ () => this._saveRating() } >
-          <Text>Save Rating</Text>
-        </TouchableOpacity>
+      <View style={styles.container}>
+        <View style={styles.textContainer}>
+          <Text style={styles.header}>
+            Rate Your Walk
+          </Text>
+          <Text style={styles.text}>How was your walk with {this.state.user.name}?</Text>
+          <View style={styles.starContainer}>
+            <StarRating
+              disabled={false}
+              maxStars={5}
+              rating={this.state.starCount}
+              selectedStar={(rating) => this.onStarRatingPress(rating) } />
+          </View>
+          <TouchableOpacity
+            style={styles.button, styles.bubble}
+            onPress={ () => this._saveRating() } >
+            <Text>Save Rating</Text>
+          </TouchableOpacity>
+          <Text style={styles.text}>
+            Click here to flag user.
+          </Text>
+        </View>
       </View>
     );
   }
@@ -62,30 +73,58 @@ class RatingsForm extends React.Component {
 
 const styles = StyleSheet.create({
  container: {
-   ...StyleSheet.absoluteFillObject,
-   justifyContent: 'flex-end',
- },
-  map: {
-    ...StyleSheet.absoluteFillObject,
+   flex: 1,
+   justifyContent: 'center',
+   alignItems: 'center',
+   backgroundColor: '#754576'
+  },
+  textContainer: {
+    backgroundColor: 'white',
+    borderRadius: 4,
+    alignItems: 'center',
+    padding: 20
+  },
+  starContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  header: {
+    fontFamily: 'GillSans-UltraBold',
+    fontSize: 24,
+    textAlign: 'center',
+    margin: 10
+  },
+  text: {
+    fontFamily: 'Gill Sans',
+    fontSize: 18,
+    textAlign: 'center',
+    padding: 10
   },
   bubble: {
-      backgroundColor: 'rgba(255,255,255,0.7)',
-      paddingHorizontal: 18,
-      paddingVertical: 12,
-      borderRadius: 20,
-      borderWidth: 1
-    },
+    paddingHorizontal: 5,
+    paddingVertical: 5,
+    borderRadius: 4,
+    borderWidth: 1,
+    width: 150,
+    alignItems: 'center',
+  },
   button: {
+    fontFamily: 'Gill Sans',
+    fontSize: 18,
     marginTop: 12,
-    paddingHorizontal: 12,
+    paddingHorizontal: 5,
     alignItems: 'center',
     marginHorizontal: 10,
   },
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginVertical: 40,
     backgroundColor: 'transparent',
+    padding: 10,
+    margin: 10
   },
 });
 
