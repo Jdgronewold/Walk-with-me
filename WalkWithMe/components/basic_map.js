@@ -228,7 +228,7 @@ _showPotentialMatch(data){
       // have to hit db again
       tempRoutes[matchedHaversine] = route.val();
       this.setState({
-        matchedRoutes: true,
+        matchedRoute: true,
         nearbyRoutes: tempRoutes,
         selectRouteMarkers: [route.val().startPosition, route.val().endPosition],
         selectRoutePolylineCoords: route.val().routePoly,
