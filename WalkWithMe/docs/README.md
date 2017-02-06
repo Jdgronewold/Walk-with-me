@@ -18,9 +18,9 @@ With this application, users will be able to:
 - [ ] Rate users based on their walking experience.
 - [ ] Flag users via the Strike feature if the other user is a male or the walking experience was unpleasant.
 
-### [Wireframes](images)
+### [Wireframes](wireframes)
 
-![wireframes](images/Log In.png)
+![wireframes](wireframes/logIn.png)
 
 ### Technologies & Technical Challenges
 
