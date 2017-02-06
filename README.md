@@ -1,10 +1,35 @@
-## Walk with Me
+## Walk With Me
 
-### Background
+Why walk alone at night or through isolated neighborhoods when there are other women walking in a similar direction?  Walk With Me is a mobile iOS application built with React Native that matches female users to each other so that they can have someone to walk home with.
 
-As a woman, being alone in the middle of the night can be an uncomfortable situation, no matter the neighborhood they’re in. Walk with Me is a mobile iOS application built with React Native that uses GPS to locate other woman around to walk home with.
+### Login
 
-The app will feature a rating system for users to rate each other, keeping the experience for both users enjoyable each time. There will also be a strikes feature that will be used to ban users from using the application if they are reported as male or unpleasant to walk with.
+![demo_login](./WalkWithMe/docs/images/demo_login.png)
+
+Users login through Facebook oAuth to confirm their identities and gender.  Upon successful login, users are directed to a map that shows their current location.
+
+![demo_map_home](images/demo_map_home.png)
+
+In order to find another woman walking in a similar direction, the user must first input her end destination.
+
+![demo_select_destination](./WalkWithMe/docs/images/matchScreen.png)
+
+A highlighted route will appear on the screen mapping her current location to her end destination.  If the route is correct, the user can then select "set route".
+
+![demo_map_route](images/demo_map_routes.png)
+
+Once a user selects "set route", the map will be updated to show other users nearby with their set routes.
+
+![demo_matched](./WalkWithMe/docs/images/matched.png)
+
+By clicking on the matches, the user can see another user's route.  The user can choose to match with another user,
+or may receive an alert that someone wants to walk with her.
+
+![demo_matchedRoute](./WalkWithMe/docs/images/matchedRoute.png)
+
+The map will then render both user's routes with the option to approve or deny the match.
+
+
 
 ### Technologies
   - React Native
