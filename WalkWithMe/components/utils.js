@@ -37,7 +37,7 @@ export const getLocation = (placeId) => {
 };
 
 export const getFacebookPhoto = (userInfo) => {
- var api = `https://graph.facebook.com/v2.3/${userInfo.userId}/picture?width=${200}&redirect=false&access_token=${userInfo.accessToken}`;
+ var api = `https://graph.facebook.com/v2.3/${userInfo.userID}/picture?width=${200}&redirect=false&access_token=${userInfo.accessToken}`;
 
  return new Promise((resolve, reject) => {
    fetch(api)
