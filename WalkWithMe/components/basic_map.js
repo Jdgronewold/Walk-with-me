@@ -16,6 +16,7 @@ import Polyline from '@mapbox/polyline';
 import { getDirections, getLocation } from './utils';
 import * as firebase from 'firebase';
 import CustomCallout from './CustomCallout';
+// import Spinner from './spinner';
 
 const { width, height } = Dimensions.get('window');
 
@@ -37,7 +38,8 @@ class BasicMap extends React.Component {
      polylineCoords: [],
      nearbyRoutes: {},
      selectRouteMarkers: [],
-     selectRoutePolylineCoords: []
+     selectRoutePolylineCoords: [],
+    //  animating: true
    };
    this.makeMarker = this.makeMarker.bind(this);
    this._openSearchModal = this._openSearchModal.bind(this);
@@ -48,6 +50,12 @@ class BasicMap extends React.Component {
    this.routeButton = this.routeButton.bind(this);
    this.haversine = this.haversine.bind(this);
  }
+
+ // closeActivityIndicator() {
+ //   setTimeout(() => {
+ //     this.setState({animating: false});
+ //   }, 3000);
+ // }
 
  componentDidMount() {
    navigator.geolocation.getCurrentPosition(
@@ -60,6 +68,7 @@ class BasicMap extends React.Component {
      (geoError) => alert(JSON.stringify(geoError)),
      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
    );
+  //  this.closeActivityIndicator();
  }
 
 componentDidUpdate() {
@@ -247,6 +256,7 @@ render() {
   } else {
     return (
         <View style={styles.container}>
+          <Spinner animating={this.state.animating} />
 
           <MapView
             ref={ref => { this.map = ref; }}
@@ -282,10 +292,10 @@ render() {
                 this._showSelectedRoute(markerKey);
               }}>
                 <MapView.Callout tooltip style={styles.customView}>
-                <CustomCallout>
+                <CustomCallout onPress={ () => console.log("pressed")}>
                   <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
-                  <Button
-                    title="Match"></Button>
+                  <Text
+                    onPress={ () => console.log("presssed")}>Match</Text>
                 </CustomCallout>
               </MapView.Callout>
             </MapView.Marker>

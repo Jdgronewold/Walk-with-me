@@ -49,93 +49,87 @@ class Login extends Component {
     }
   }
 
-
-
-
-               //
-              //  <View style={styles.container}>
-
-              //    </View>
-
   render() {
     this.checkLogin();
     return (
       <Image source={require('./street-background.png')}
              style={styles.image}>
         <View style={styles.container}>
-             <Text style={styles.welcome}>
-               Walk With Me
-             </Text>
-             <Text style={styles.instructions}>
-               Login with Facebook to get started
-             </Text>
-             <LoginButton
-               onLoginFinished={
-                 (err, res) => {
-                   if (err) {
-                     alert("login has error: " + res.error);
-                   } else if (res.isCancelled) {
-                     alert("login is cancelled.");
-                   } else {
+           <Text style={styles.welcome}>
+             Walk With Me
+           </Text>
+           <Text style={styles.instructions}>
+             Login with Facebook to get started.
+           </Text>
+        <View style={styles.button}>
+          <LoginButton
+           onLoginFinished={
+             (err, res) => {
+               if (err) {
+                 alert("login has error: " + res.error);
+               } else if (res.isCancelled) {
+                 alert("login is cancelled.");
+               } else {
 
-                     AccessToken.getCurrentAccessToken().then(
-                       (data) => {
-                         let accessToken = data.accessToken;
-                         const credential = firebase.auth.FacebookAuthProvider.credential(data.accessToken);
+                 AccessToken.getCurrentAccessToken().then(
+                   (data) => {
+                     let accessToken = data.accessToken;
+                     const credential = firebase.auth.FacebookAuthProvider.credential(data.accessToken);
 
-                         const responseInfoCallback = (error, result) => {
-                           if(error){
-                             console.log(error);
-                             alert('Error fetching data: ' + error.toString());
-                           } else {
-                             if(result.gender === 'boop'){
-                               LoginManager.logOut();
-                               firebase.auth().signOut();
-                               alert('Sorry, only women are currently allowed on Walk With Me.');
-                             }
+                     const responseInfoCallback = (error, result) => {
+                       if(error){
+                         console.log(error);
+                         alert('Error fetching data: ' + error.toString());
+                       } else {
+                         if(result.gender === 'boop'){
+                           LoginManager.logOut();
+                           firebase.auth().signOut();
+                           alert('Sorry, only women are currently allowed on Walk With Me.');
+                         }
 
-                             const user = {
-                               userID: result.id,
-                               name: result.name,
-                               gender: result.gender,
-                               accessToken: accessToken
-                             };
-
-                             this.setState({
-                               user: user
-                             });
-                             let ref = firebase.database().ref('users/' + result.id);
-                             ref.once("value")
-                             .then(function(snapshot) {
-                               let exists = snapshot.exists();
-                               if (exists === false) {
-                                 firebase.database().ref('users/' + result.id).set(user);
-                               }
-                             });
-                             console.log("hit redirect");
-                             this.checkLogin();
-                           }
+                         const user = {
+                           userID: result.id,
+                           name: result.name,
+                           gender: result.gender,
+                           accessToken: accessToken
                          };
-                         const infoRequest = new GraphRequest(
-                           '/me',
-                           {
-                             accessToken: accessToken,
-                             parameters: {
-                               fields: {
-                                 string: 'name, gender'
-                               }
-                             }
-                           },
-                           responseInfoCallback
-                         );
-                         console.log(firebase.auth().currentUser);
-                         new GraphRequestManager().addRequest(infoRequest).start();
-                         return firebase.auth().signInWithCredential(credential);
-                       });
-                     }
-                   }
+
+                         this.setState({
+                           user: user
+                         });
+                         let ref = firebase.database().ref('users/' + result.id);
+                         ref.once("value")
+                         .then(function(snapshot) {
+                           let exists = snapshot.exists();
+                           if (exists === false) {
+                             firebase.database().ref('users/' + result.id).set(user);
+                           }
+                         });
+                         console.log("hit redirect");
+                         this.checkLogin();
+                       }
+                     };
+                     const infoRequest = new GraphRequest(
+                       '/me',
+                       {
+                         accessToken: accessToken,
+                         parameters: {
+                           fields: {
+                             string: 'name, gender'
+                           }
+                         }
+                       },
+                       responseInfoCallback
+                     );
+                     console.log(firebase.auth().currentUser);
+                     new GraphRequestManager().addRequest(infoRequest).start();
+                     return firebase.auth().signInWithCredential(credential);
+                   });
                  }
-                 onLogoutFinished={() => alert("logout.")}/>
+               }
+             }
+             onLogoutFinished={() => alert("logout.")}/>
+          </View>
         </View>
       </Image>
     );
@@ -169,6 +163,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#000000',
     marginBottom: 5,
+    padding: 10
+  },
+  button: {
     padding: 10
   }
 });
