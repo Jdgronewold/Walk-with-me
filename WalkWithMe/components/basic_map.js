@@ -456,6 +456,7 @@ const styles = StyleSheet.create({
   userLargeIcon: {
     height: 80,
     width: 80,
+    marginVertical: 5,
   },
 });
 
