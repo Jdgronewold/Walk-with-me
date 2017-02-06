@@ -7,14 +7,15 @@ import {
   Navigator,
   Dimensions,
   TouchableOpacity,
-  Image
+  Button
 } from 'react-native';
 
-import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
+import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
 import Polyline from '@mapbox/polyline';
-import { getDirections, getLocation, getFacebookPhoto } from './utils';
+import { getDirections, getLocation } from './utils';
 import * as firebase from 'firebase';
+import CustomCallout from './CustomCallout';
 
 const { width, height } = Dimensions.get('window');
 
@@ -150,6 +151,7 @@ _createRouteCoordinates(data) {
           }
         }
         this.setState({nearbyRoutes: newRoutes})
+        console.log(this.state.nearbyRoutes);
       }
     })
 }
@@ -263,7 +265,7 @@ render() {
           >
 
           {this.state.markers.map( (marker, idx) => (
-            <Marker
+            <MapView.Marker
             coordinate={marker.latlng}
             title={marker.title}
             key={idx}
@@ -272,7 +274,7 @@ render() {
 
           {
             Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
-            <Marker
+            <MapView.Marker
               coordinate={this.state.nearbyRoutes[key].startPosition}
               key={key}
               title={this.state.nearbyRoutes[key].name}
@@ -281,18 +283,19 @@ render() {
                 const markerKey = key;
                 this._showSelectedRoute(markerKey);
               }}>
-                <View>
-                  <Image
-                     style={{width: 50, height: 50}}
-                     source={{uri: 'https://facebook.github.io/react/img/logo_og.png'}}
-                   />
-                </View>
-            </Marker>
+                <MapView.Callout tooltip style={styles.customView}>
+                <CustomCallout>
+                  <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
+                  <Button
+                    title="Match"></Button>
+                </CustomCallout>
+              </MapView.Callout>
+            </MapView.Marker>
           ))
         }
 
         {this.state.selectRouteMarkers.map((marker, idx) => (
-          <Marker
+          <MapView.Marker
             coordinate={marker}
             pinColor={"#37fdfc"}
             key={idx}
@@ -331,6 +334,10 @@ render() {
 
 
 const styles = StyleSheet.create({
+  customView: {
+    width: 140,
+    height: 100,
+  },
  container: {
    ...StyleSheet.absoluteFillObject,
    justifyContent: 'flex-end',
