@@ -65,3 +65,5 @@ const styles = StyleSheet.create({
 });
 
 module.exports = CustomCallout;
+
+module.exports = CustomCallout;

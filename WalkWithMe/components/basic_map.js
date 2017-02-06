@@ -220,7 +220,7 @@ _setListeners() {
     .equalTo(this.props.user.userID)
     .on("child_added", this._matchedRoutesCallback)
   let completedMatchesRef = firebase.database().ref('completedMatches');
-  completedMatchesRef.orderByChild()
+  // completedMatchesRef.orderByChild()
 }
 
 _matchedRoutesCallback(data) {
@@ -228,7 +228,13 @@ _matchedRoutesCallback(data) {
 }
 
 _sendMatchRequest() {
-  const route = this.state.nearbyRoutes[haversineKey];
+  const selectRouteStart = this.state.selectRouteMarkers[0];
+  const selectHaversine = this.haversine(
+                            this.state.startPosition,
+                            selectRouteStart
+                          )
+  const route = this.state.nearbyRoutes[selectHaversine];
+  debugger
   let matchedRoutesRef = firebase.database().ref('matchedRoutes');
   let matchedRouteKey = matchedRoutesRef.push();
   matchedRouteKey.set({
@@ -287,14 +293,25 @@ makeMarker(location, pos, title) {
 
 routeButton(){
   if (Object.keys(this.state.endPosition).length !== 0) {
-    return(
-      <TouchableOpacity
-        style={styles.button, styles.bubble}
-        onPress={() => this._saveRoute()}
-        >
-        <Text>Set Route</Text>
-      </TouchableOpacity>
-    )
+    if (this.state.selectRouteMarkers.length > 0 ) {
+      return(
+        <TouchableOpacity
+          style={styles.button, styles.bubble}
+          onPress={() => this._sendMatchRequest()}
+          >
+          <Text>Match Route</Text>
+        </TouchableOpacity>
+      )
+    } else {
+      return(
+        <TouchableOpacity
+          style={styles.button, styles.bubble}
+          onPress={() => this._saveRoute()}
+          >
+          <Text>Set Route</Text>
+        </TouchableOpacity>
+      )
+    }
   }
 }
 
@@ -347,7 +364,7 @@ render() {
                   <TouchableOpacity
                       onPress={() => {
                         const markerKey = key
-                        this._sendMatchRequest(markerKey)
+
                       }}
                       style={styles.button, styles.bubble}
                       >
