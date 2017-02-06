@@ -6,7 +6,8 @@ import {
   View,
   Navigator,
   Dimensions,
-  TouchableOpacity
+  TouchableOpacity,
+  Button
 } from 'react-native';
 
 import MapView, { PROVIDER_GOOGLE } from 'react-native-maps';
@@ -14,6 +15,7 @@ import RNGooglePlaces from 'react-native-google-places';
 import Polyline from '@mapbox/polyline';
 import { getDirections, getLocation } from './utils';
 import * as firebase from 'firebase';
+import CustomCallout from './CustomCallout';
 
 const { width, height } = Dimensions.get('window');
 
@@ -33,9 +35,11 @@ class BasicMap extends React.Component {
      markers: [],
      endPosition: {},
      polylineCoords: [],
-     nearbyRoutes: {},
+     nearbyRoutes: {} ,
      selectRouteMarkers: [],
-     selectRoutePolylineCoords: []
+     selectRoutePolylineCoords: [],
+     matchedRoute: false,
+     routeID: ''
    };
 
    // if lodash works in react native we should definitely use
@@ -51,6 +55,8 @@ class BasicMap extends React.Component {
    this._fitScreen = this._fitScreen.bind(this);
    this._nearbyRoutesCallback = this._nearbyRoutesCallback.bind(this);
    this._setListeners = this._setListeners.bind(this);
+   this._matchedRoutesCallback = this._matchedRoutesCallback.bind(this);
+   this._sendMatchRequest = this._sendMatchRequest.bind(this);
  }
 
  componentDidMount() {
@@ -97,6 +103,7 @@ _openSearchModal() {
   .catch(error => console.log(error.message));  // error is a Javascript Error object
 }
 
+
 _createRouteCoordinates(data) {
    if (data.status !== 'OK') {
      console.log("Directions did not work");
@@ -120,12 +127,16 @@ _createRouteCoordinates(data) {
  _saveRoute(){
    let routesRef = firebase.database().ref('routes');
    let newRouteRef = routesRef.push();
+   debugger
    newRouteRef.set({
      userID: this.props.user.userID,
      name: this.props.user.name,
      startPosition: this.state.startPosition,
-     endPosition: this.state.endPosition
+     endPosition: this.state.endPosition,
+     routeKey: newRouteRef.key,
+     routePoly: this.state.polylineCoords
    })
+   this.setState({routeID: newRouteRef.key});
    this._getNearbyRoutes();
    this._setListeners();
  }
@@ -145,7 +156,6 @@ _createRouteCoordinates(data) {
 }
 
 _nearbyRoutesCallback(data) {
-  console.log(data);
     const newRoutes = Object.assign({}, this.state.nearbyRoutes);
     const dist = this.haversine(
       this.state.startPosition,
@@ -178,7 +188,7 @@ _showSelectedRoute(haversineKey) {
     .then(polylineCoords => {
       this.setState({
         selectRouteMarkers: [route.startPosition, route.endPosition],
-        selectRoutePolylineCoords: polylineCoords
+        selectRoutePolylineCoords: route.polylineCoords
       });
     });
   }
@@ -197,7 +207,32 @@ _fitScreen() {
 }
 
 _setListeners() {
+  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
+  matchedRoutesRef.orderByChild("follower/userID")
+    .equalTo(this.props.user.userID)
+    .on("child_added", this._matchedRoutesCallback)
+  let completedMatchesRef = firebase.database().ref('completedMatches');
+  completedMatchesRef.orderByChild()
+}
 
+_matchedRoutesCallback(data) {
+  console.log("route matched!");
+}
+
+_sendMatchRequest() {
+  const route = this.state.nearbyRoutes[haversineKey];
+  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
+  let matchedRouteKey = matchedRoutesRef.push();
+  matchedRouteKey.set({
+    author: {
+      userID: this.props.user.userID,
+      routeKey: this.state.routeID
+    },
+    follower: {
+      userID: route.userID,
+      routeKey: route.routeKey
+    }
+  })
 }
 
 
@@ -298,6 +333,20 @@ render() {
                 const markerKey = key;
                 this._showSelectedRoute(markerKey);
               }}>
+                <MapView.Callout tooltip style={styles.customView}>
+                  <CustomCallout>
+                    <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
+                    <TouchableOpacity
+                      onPress={() => {
+                        const markerKey = key
+                        this._sendMatchRequest(markerKey)
+                      }}
+                      style={styles.button, styles.bubble}
+                      >
+                      <Text> Match!</Text>
+                    </TouchableOpacity>
+                  </CustomCallout>
+                </MapView.Callout>
             </MapView.Marker>
           ))
         }
@@ -340,8 +389,12 @@ render() {
 }
 }
 
-
+///the onPress in the touchable was:
 const styles = StyleSheet.create({
+  customView: {
+    width: 140,
+    height: 100,
+  },
  container: {
    ...StyleSheet.absoluteFillObject,
    justifyContent: 'flex-end',
