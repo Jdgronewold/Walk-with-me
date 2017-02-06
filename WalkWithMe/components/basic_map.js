@@ -230,7 +230,7 @@ _showPotentialMatch(data){
       tempRoutes[matchedHaversine] = route.val();
       debugger
       this.setState({
-        matchedRoutes: true,
+        matchedRoute: true,
         nearbyRoutes: tempRoutes,
         selectRouteMarkers: [route.val().startPosition, route.val().endPosition],
         selectRoutePolylineCoords: route.val().routePoly,
