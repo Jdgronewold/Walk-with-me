@@ -196,7 +196,7 @@ _showSelectedRoute(haversineKey) {
     .then(polylineCoords => {
       this.setState({
         selectRouteMarkers: [route.startPosition, route.endPosition],
-        selectRoutePolylineCoords: route.polylineCoords
+        selectRoutePolylineCoords: route.routePoly
       });
     });
   }
@@ -220,7 +220,7 @@ _setListeners() {
     .equalTo(this.props.user.userID)
     .on("child_added", this._matchedRoutesCallback)
   let completedMatchesRef = firebase.database().ref('completedMatches');
-  completedMatchesRef.orderByChild()
+  // completedMatchesRef.orderByChild()
 }
 
 _matchedRoutesCallback(data) {
@@ -299,7 +299,7 @@ routeButton(){
           style={styles.button, styles.bubble}
           onPress={() => this._sendMatchRequest()}
           >
-          <Text>Set Route</Text>
+          <Text>Match Route</Text>
         </TouchableOpacity>
       )
     } else {
@@ -308,7 +308,7 @@ routeButton(){
           style={styles.button, styles.bubble}
           onPress={() => this._saveRoute()}
           >
-          <Text>Match Route</Text>
+          <Text>Set Route</Text>
         </TouchableOpacity>
       )
     }
@@ -349,37 +349,28 @@ render() {
 
           {
             Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
-            <Marker
-              coordinate={this.state.nearbyRoutes[key].startPosition}
-              key={key}
-              title={this.state.nearbyRoutes[key].name}
-              pinColor="#39FF14"
-              onPress={() => {
-                const markerKey = key;
-                this._showSelectedRoute(markerKey);
-              }}>
+              <Marker
+                coordinate={this.state.nearbyRoutes[key].startPosition}
+                key={key}
+                title={this.state.nearbyRoutes[key].name}
+                pinColor="#39FF14"
+                onPress={() => {
+                  const markerKey = key;
+                  this._showSelectedRoute(markerKey);
+                }}>
                 <MapView.Callout tooltip style={styles.customView}>
-                <CustomCallout>
-                  <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
-                  <TouchableOpacity
-                      onPress={() => {
-                        const markerKey = key
-
-                      }}
-                      style={styles.button, styles.bubble}
-                      >
-                      <Text> Match!</Text>
-                </TouchableOpacity>
-              <View>
-                <Image
-                   style={{width: 50, height: 50}}
-                   source={{uri: 'this.state.nearbyRoutes[key].imgUrl'}}
-                 />
-              </View>
-          </CustomCallout>
-        </MapView.Callout>
-       </Marker>
-          ))
+                  <CustomCallout>
+                    <Text>Walk with {this.state.nearbyRoutes[key].name}</Text>
+                    <View>
+                      <Image
+                        style={{width: 50, height: 50}}
+                        source={{uri: this.state.nearbyRoutes[key].imgUrl}}
+                        />
+                    </View>
+                  </CustomCallout>
+                </MapView.Callout>
+              </Marker>
+            ))
         }
 
         {this.state.selectRouteMarkers.map((marker, idx) => (
