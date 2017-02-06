@@ -49,3 +49,11 @@ export const getFacebookPhoto = (userInfo) => {
    });
  });
 };
+
+export function renderIf(condition, component){
+  if (condition) {
+    return component;
+  } else {
+    return null;
+  }
+}
