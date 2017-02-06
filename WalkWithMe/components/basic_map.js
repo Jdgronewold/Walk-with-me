@@ -15,7 +15,7 @@ import {
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
 import Polyline from '@mapbox/polyline';
-import { getDirections, getLocation, getFacebookPhoto, renderIf } from './utils';
+import { getDirections, getLocation, getFacebookPhoto } from './utils';
 import * as firebase from 'firebase';
 import CustomCallout from './CustomCallout';
 
@@ -375,12 +375,12 @@ render() {
           ))
         }
 
-        {renderIf(this.state.selectRouteMarkers[1],
+        {this.state.selectRouteMarkers[1] &&
           <Marker
             coordinate={this.state.selectRouteMarkers[1]}
             pinColor={"#37fdfc"}
             />
-        )}
+        }
 
         <MapView.Polyline
           coordinates={this.state.polylineCoords}
