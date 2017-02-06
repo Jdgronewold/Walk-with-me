@@ -432,6 +432,7 @@ getRouteByChildValue(child, value){
   let route;
   keys.forEach( key => {
     console.log(this.state.nearbyRoutes);
+    debugger
     if (this.state.nearbyRoutes[key][child] === value) {
       route = this.state.nearbyRoutes[key];
     }
