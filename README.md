@@ -12,11 +12,11 @@ Users login through Facebook oAuth to confirm their identities and gender.  Upon
 
 In order to find another woman walking in a similar direction, the user must first input her end destination.
 
-![demo_select_destination](./WalkWithMe/docs/images/matchScreen.png)
+![demo_select_destination](./WalkWithMe/docs/images/input_destination.png)
 
 A highlighted route will appear on the screen mapping her current location to her end destination.  If the route is correct, the user can then select "set route".
 
-![demo_map_route](images/demo_map_routes.png)
+![demo_map_route](./WalkWithMe/docs/images/matchScreen.png)
 
 Once a user selects "set route", the map will be updated to show other users nearby with their set routes.
 
