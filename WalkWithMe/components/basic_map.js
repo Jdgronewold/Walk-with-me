@@ -224,7 +224,21 @@ _setListeners() {
 }
 
 _matchedRoutesCallback(data) {
+  console.log(data.val());
+  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
   console.log("route matched!");
+  Alert.alert(
+            'You have a Match!',
+            alertMessage,
+            [
+              {text: 'Cancel Match', onPress: () => console.log('Cancel Match')},
+              {text: 'Accept Match', onPress: () => {
+                matchedRoutesRef.orderByChild("author/userID")
+                  .equalTo(this.props.user.userID)
+                  .on('child_added', somerouterenderfunction)
+              }},
+            ]
+          )
 }
 
 _sendMatchRequest() {
