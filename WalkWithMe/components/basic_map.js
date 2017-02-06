@@ -217,7 +217,6 @@ _showPotentialMatch(data){
   //can't automatically rely on it being in this.state.nearbyRoutes
   //but should look there first to optimize things
   //come back and do that later
-  console.log(data);
   firebase.database().ref('routes/' + data.val().author.routeKey)
     .once("value").then( (route) => {
       const tempRoutes = Object.assign({}, this.state.nearbyRoutes);
@@ -228,7 +227,6 @@ _showPotentialMatch(data){
       // add the found route so later in _approveMatch don't
       // have to hit db again
       tempRoutes[matchedHaversine] = route.val();
-      debugger
       this.setState({
         matchedRoutes: true,
         nearbyRoutes: tempRoutes,
@@ -300,8 +298,9 @@ _setListenersOnNewMatchRequest() {
 }
 
 _completedMatchCallback(data){
+  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
+  matchedRoutesRef.off("child_removed", this._rejectedMatchCallback)
   const route = this.getRouteByChildValue('name', data.val().follower.username);
-  debugger
   const opts = {
     fromCoords: this.state.startPosition,
     toCoords: route.startPosition
@@ -318,13 +317,17 @@ _completedMatchCallback(data){
 
   Alert.alert(
     'Match Successful!',
-    `Follow the blue line to meet ${data.val().follower.username}`);
+    `Follow the blue line to meet ${data.val().follower.username}`,
+    [
+      {text: 'Great!', onPress: () => {
+        firebase.database().ref('matchedRoutes/' + data.val().matchedRouteKey).remove();
+      }}
+    ]
+  );
 
   firebase.database().ref('routes/' + data.val().author.routeKey).remove();
   firebase.database().ref('routes/' + data.val().follower.routeKey).remove();
-  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
-  matchedRoutesRef.off("child_added", this._matchedRoutesCallback);
-  firebase.database().ref('matchedRoutes/' + data.val().matchedRouteKey).remove();
+
 
 }
 
@@ -351,9 +354,15 @@ _approveMatch(){
     .equalTo(this.props.user.userID)
     .on("child_removed", this._alertAuthorIncoming);
 
-  const routeStore = this.getRouteByChildValue("startPosition", this.state.selectRouteMarkers[0]);
-  const dist = this.haversine(this.state.startPosition, this.state.selectRouteMarkers[0]);
-  this.setState({nearbyRoutes: {dist: routeStore}})
+  const dist = this.haversine(
+    this.state.startPosition,
+    this.state.selectRouteMarkers[0]
+  )
+  const routeStore = this.state.nearbyRoutes[dist];
+  tempNearby = {};
+  tempNearby[dist] = routeStore;
+
+  this.setState({ nearbyRoutes: tempNearby})
 
   const route = this.getRouteByStartAndHaversine();
   let completedMatchesRef = firebase.database().ref('completedMatches');
@@ -422,7 +431,6 @@ getRouteByStartAndHaversine(){
                             this.state.startPosition,
                             selectRouteStart
                           )
-                          debugger
   const route = this.state.nearbyRoutes[selectHaversine];
   return route;
 }
@@ -431,13 +439,10 @@ getRouteByChildValue(child, value){
   const keys = Object.keys(this.state.nearbyRoutes);
   let route;
   keys.forEach( key => {
-    console.log(this.state.nearbyRoutes);
-    debugger
     if (this.state.nearbyRoutes[key][child] === value) {
       route = this.state.nearbyRoutes[key];
     }
   })
-  debugger
   return route;
 }
 
@@ -540,7 +545,6 @@ renderButtons() {
 
 
 render() {
-  console.log(this.state.selectRouteMarkers);
   if (Object.keys(this.state.startPosition).length === 0) {
     return (
       <View style={styles.container}></View>
