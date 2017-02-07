@@ -27,9 +27,11 @@ or may receive an alert that someone wants to walk with her.
 
 ![demo_matchedRoute](./WalkWithMe/docs/images/matchedRoute.png)
 
-The map will then render both user's routes with the option to approve or deny the match.
+The map will then render both user's routes with the option to approve or deny the match.  The app will then render a route to direct the requesting user to the matched user's start location.
 
+![demo_ratings](./WalkWithMe/docs/images/rating.png)
 
+At the conclusion of the walk, users are directed to rate their matches on a 5 star scale.  Users can also flag other users, which will result on a ban if necessary.
 
 ### Technologies
   * React Native
