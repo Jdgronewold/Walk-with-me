@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { bindAll, merge } from 'lodash';
 import {
   AppRegistry,
   StyleSheet,
@@ -11,6 +12,7 @@ import {
   Image,
   Alert
 } from 'react-native';
+import { basicStyles, mapStyle } from './styles';
 
 import MapView, { PROVIDER_GOOGLE, Marker } from 'react-native-maps';
 import RNGooglePlaces from 'react-native-google-places';
@@ -81,7 +83,7 @@ class BasicMap extends React.Component {
        const initialPosition = JSON.stringify(position);
        const {latitude, longitude} = position.coords;
        const LatLng = { latitude, longitude };
-       this.makeMarker(LatLng, "startPosition", "Start Position")
+       this.makeMarker(LatLng, "startPosition", "Start Position");
      },
      (geoError) => alert(JSON.stringify(geoError)),
      {enableHighAccuracy: true, timeout: 20000, maximumAge: 1000}
@@ -92,7 +94,7 @@ componentDidUpdate() {
   // might need to also update the markers here if we move the start marker
   if (Object.keys(this.state.endPosition).length !== 0 &&
       Object.keys(this.state.startPosition).length !== 0) {
-        this._fitScreen()
+        this._fitScreen();
       }
 }
 
@@ -103,18 +105,18 @@ _openSearchModal() {
       latitude: place.latitude,
       longitude: place.longitude
     };
-    this.makeMarker(endpos, "endPosition", "Destination")
+    this.makeMarker(endpos, "endPosition", "Destination");
     return place;
   }).then((place) => {
     const opts = {
       fromCoords: this.state.startPosition,
       toCoords: this.state.endPosition
-    }
+    };
     getDirections(opts)
     .then(data => this._createRouteCoordinates(data))
     .then(polylineCoords => {
-      this.setState({polylineCoords})
-    })
+      this.setState({polylineCoords});
+    });
   })
   .catch(error => console.log(error.message));
 }
@@ -134,7 +136,7 @@ _createRouteCoordinates(data) {
      let tempLocation = {
        latitude : steps[i][0],
        longitude : steps[i][1]
-     }
+     };
      polylineCoords.push(tempLocation);
    }
    return polylineCoords;
@@ -155,16 +157,16 @@ _createRouteCoordinates(data) {
          routeKey: newRouteRef.key,
          routePoly: this.state.polylineCoords,
          imgUrl: imgUrl
-       })
-     })
+       });
+     });
    this.setState({routeKey: newRouteRef.key});
    this._setListenersOnNewRoute();
  }
 
  _setListenersOnNewRoute() {
    let routesRef = firebase.database().ref('routes');
-   const startLat = this.state.startPosition.latitude - 0.01
-   const endLat = this.state.startPosition.latitude + 0.01
+   const startLat = this.state.startPosition.latitude - 0.01;
+   const endLat = this.state.startPosition.latitude + 0.01;
    routesRef.orderByChild("startPosition/latitude")
    .startAt(startLat)
    .endAt(endLat)
@@ -176,7 +178,7 @@ _createRouteCoordinates(data) {
    let matchedRoutesRef = firebase.database().ref('matchedRoutes');
    matchedRoutesRef.orderByChild("follower/userID")
    .equalTo(this.props.user.userID)
-   .on("child_added", this._matchedRoutesCallback)
+   .on("child_added", this._matchedRoutesCallback);
  }
 
 _nearbyRoutesCallback(data) {
@@ -196,7 +198,7 @@ _nearbyRoutesCallback(data) {
           newRoutes[dist] = data.val();
         }
       }
-      this.setState({nearbyRoutes: newRoutes})
+      this.setState({nearbyRoutes: newRoutes});
     }
 }
 
@@ -209,7 +211,7 @@ _matchedRoutesCallback(data) {
     [
       {text: 'View Route', onPress: () => this._showPotentialMatch(data)},
     ]
-  )
+  );
 }
 
 _showPotentialMatch(data){
@@ -277,9 +279,9 @@ _sendMatchRequest() {
       username: route.name
     },
     key: matchedRouteKey.key
-  })
-  this.setState({disableButtons: true})
-  this._setListenersOnNewMatchRequest()
+  });
+  this.setState({disableButtons: true});
+  this._setListenersOnNewMatchRequest();
 }
 
 _setListenersOnNewMatchRequest() {
@@ -299,24 +301,25 @@ _setListenersOnNewMatchRequest() {
 
 _completedMatchCallback(data){
   let matchedRoutesRef = firebase.database().ref('matchedRoutes');
-  matchedRoutesRef.off("child_removed", this._rejectedMatchCallback)
+  matchedRoutesRef.off("child_removed", this._rejectedMatchCallback);
   const route = this.getRouteByChildValue('name', data.val().follower.username);
   const opts = {
     fromCoords: this.state.startPosition,
     toCoords: route.startPosition
-  }
+  };
   getDirections(opts)
-  .then(data => this._createRouteCoordinates(data))
+  .then(directionsData => this._createRouteCoordinates(directionsData))
   .then(polylineCoords => {
     this.setState({
       nearbyRoutes: {},
       selectRouteMarkers: [this.state.startPosition, route.startPosition],
       selectRoutePolylineCoords: polylineCoords
-    })
-  })
+    });
+  });
 
   Alert.alert(
     'Match Successful!',
+
     `Follow the blue line to meet ${data.val().follower.username}`,
     [
       {text: 'Great!', onPress: () => {
@@ -341,7 +344,7 @@ _rejectedMatchCallback(data){
       {text: 'New Route', onPress: () => this._openSearchModal()},
       {text: 'Continue Searching', onPress: () => this._saveRoute()},
     ]
-  )
+  );
 }
 
 _approveMatch(){
@@ -357,12 +360,12 @@ _approveMatch(){
   const dist = this.haversine(
     this.state.startPosition,
     this.state.selectRouteMarkers[0]
-  )
+  );
   const routeStore = this.state.nearbyRoutes[dist];
-  tempNearby = {};
+  let tempNearby = {};
   tempNearby[dist] = routeStore;
 
-  this.setState({ nearbyRoutes: tempNearby})
+  this.setState({ nearbyRoutes: tempNearby});
 
   const route = this.getRouteByStartAndHaversine();
   let completedMatchesRef = firebase.database().ref('completedMatches');
@@ -380,12 +383,12 @@ _approveMatch(){
       username: this.props.user.name
     },
     matchedRouteKey: this.state.matchedRouteKey
-  })
+  });
 }
 
 _alertAuthorIncoming(){
   const route = this.getRouteByStartAndHaversine();
-  Alert.alert(`Success!`, `${route.name} is on her way!`)
+  Alert.alert(`Success!`, `${route.name} is on her way!`);
 }
 
 _denyMatch(){
@@ -394,7 +397,7 @@ _denyMatch(){
     matchedRoute: false,
     selectRouteMarkers: [],
     selectRoutePolylineCoords: []
-  })
+  });
 }
 
 
@@ -414,7 +417,7 @@ haversine(startLocation, testLocation) {
   const x1 = lat2 - lat1;
   const dLat = toRad(x1);
   const x2 = lon2 - lon1;
-  const dLon = toRad(x2)
+  const dLon = toRad(x2);
   const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
     Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
     Math.sin(dLon / 2) * Math.sin(dLon / 2);
@@ -430,7 +433,7 @@ getRouteByStartAndHaversine(){
   const selectHaversine = this.haversine(
                             this.state.startPosition,
                             selectRouteStart
-                          )
+                          );
   const route = this.state.nearbyRoutes[selectHaversine];
   return route;
 }
@@ -442,7 +445,7 @@ getRouteByChildValue(child, value){
     if (this.state.nearbyRoutes[key][child] === value) {
       route = this.state.nearbyRoutes[key];
     }
-  })
+  });
   return route;
 }
 
@@ -462,13 +465,13 @@ makeMarker(location, pos, title) {
 destinationButton() {
   return(
     <TouchableOpacity
-      style={styles.button, styles.bubble}
+      style={basicStyles.button, basicStyles.bubble}
       disabled={this.state.disableButtons}
       onPress={() => this._openSearchModal()}
       >
       <Text>Pick a destination</Text>
     </TouchableOpacity>
-  )
+  );
 }
 
 
@@ -476,70 +479,70 @@ searchButtons(){
   if (Object.keys(this.state.endPosition).length !== 0) {
     if (this.state.selectRouteMarkers.length > 0 ) {
       return(
-        <View style={styles.buttonContainer}>
+        <View style={basicStyles.buttonContainer}>
           {this.destinationButton()}
 
           <TouchableOpacity
-            style={styles.button, styles.bubble}
+            style={basicStyles.button, basicStyles.bubble}
             disabled={this.state.disableButtons}
             onPress={() => this._sendMatchRequest()}
             >
             <Text>Match Route</Text>
           </TouchableOpacity>
       </View>
-      )
+    );
     } else {
       return(
-        <View style={styles.buttonContainer}>
+        <View style={basicStyles.buttonContainer}>
           {this.destinationButton()}
 
           <TouchableOpacity
-            style={styles.button, styles.bubble}
+            style={basicStyles.button, basicStyles.bubble}
             onPress={() => this._saveRoute()}
             >
             <Text>Set Route</Text>
           </TouchableOpacity>
         </View>
-      )
+      );
     }
   } else {
     return (
-      <View style={styles.buttonContainer}>
+      <View style={basicStyles.buttonContainer}>
         { this.destinationButton() }
       </View>
-    )
+    );
   }
 }
 
 matchButtons(){
   return(
-    <View style={styles.buttonContainer}>
+    <View style={basicStyles.buttonContainer}>
       <TouchableOpacity
-        style={styles.button, styles.bubble}
+        style={basicStyles.button, basicStyles.bubble}
         onPress={() => this._approveMatch()}
         >
         <Text>Approve Match</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
-        style={styles.button, styles.bubble}
+        style={basicStyles.button, basicStyles.bubble}
         onPress={() => this._denyMatch()}
         >
         <Text>Deny Match</Text>
       </TouchableOpacity>
   </View>
-  )
+);
 }
 
 renderButtons() {
   if (this.state.matchedRoute) {
     return (
       this.matchButtons()
-    )
+    );
   } else {
     return (
       this.searchButtons()
-    )
+    );
   }
 }
 
@@ -547,16 +550,16 @@ renderButtons() {
 render() {
   if (Object.keys(this.state.startPosition).length === 0) {
     return (
-      <View style={styles.container}></View>
+      <View style={basicStyles.container}></View>
     );
   } else {
     return (
-        <View style={styles.container}>
+        <View style={basicStyles.container}>
 
           <MapView
             ref={ref => { this.map = ref; }}
             provider={PROVIDER_GOOGLE}
-            style={styles.map}
+            style={basicStyles.map}
             customMapStyle={mapStyle}
             showsBuildings={true}
             initialRegion={{
@@ -586,12 +589,12 @@ render() {
                   const markerKey = key;
                   this._showSelectedRoute(markerKey);
                 }}>
-                <MapView.Callout tooltip style={styles.customView}>
+                <MapView.Callout tooltip style={basicStyles.customView}>
 
                   <CustomCallout>
                     <Text>{this.state.nearbyRoutes[key].name}</Text>
                     <Image
-                      style={styles.userLargeIcon}
+                      style={basicStyles.userLargeIcon}
                       source={{uri: this.state.nearbyRoutes[key].imgUrl}}
                       />
                   </CustomCallout>
@@ -599,7 +602,7 @@ render() {
 
               <View>
                 <Image
-                  style={styles.userIcon}
+                  style={basicStyles.userIcon}
                   source={{uri: this.state.nearbyRoutes[key].imgUrl}}
                   />
               </View>
@@ -636,236 +639,5 @@ render() {
 }
 }
 
-
-const styles = StyleSheet.create({
-  customView: {
-    width: 140,
-    height: 140,
-  },
- container: {
-   ...StyleSheet.absoluteFillObject,
-   justifyContent: 'flex-end',
- },
-  map: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  bubble: {
-      backgroundColor: 'rgba(255,255,255,0.7)',
-      paddingHorizontal: 18,
-      paddingVertical: 12,
-      borderRadius: 20,
-    },
-  button: {
-    marginTop: 12,
-    paddingHorizontal: 12,
-    alignItems: 'center',
-    marginHorizontal: 10,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: 40,
-    backgroundColor: 'transparent',
-  },
-  userIcon: {
-    height: 30,
-    width: 30,
-    borderRadius: 20,
-    borderWidth: 2.5,
-    borderColor: 'rgba(255,255,255,0.7)',
-  },
-  userLargeIcon: {
-    height: 80,
-    width: 80,
-    marginVertical: 5,
-  },
-});
-
-const mapStyle = [
-  {
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#212121"
-      }
-    ]
-  },
-  {
-    "elementType": "labels.icon",
-    "stylers": [
-      {
-        "visibility": "off"
-      }
-    ]
-  },
-  {
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#757575"
-      }
-    ]
-  },
-  {
-    "elementType": "labels.text.stroke",
-    "stylers": [
-      {
-        "color": "#212121"
-      }
-    ]
-  },
-  {
-    "featureType": "administrative",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#757575"
-      }
-    ]
-  },
-  {
-    "featureType": "administrative.country",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#9e9e9e"
-      }
-    ]
-  },
-  {
-    "featureType": "administrative.land_parcel",
-    "stylers": [
-      {
-        "visibility": "off"
-      }
-    ]
-  },
-  {
-    "featureType": "administrative.locality",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#bdbdbd"
-      }
-    ]
-  },
-  {
-    "featureType": "poi",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#757575"
-      }
-    ]
-  },
-  {
-    "featureType": "poi.park",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#181818"
-      }
-    ]
-  },
-  {
-    "featureType": "poi.park",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#616161"
-      }
-    ]
-  },
-  {
-    "featureType": "poi.park",
-    "elementType": "labels.text.stroke",
-    "stylers": [
-      {
-        "color": "#1b1b1b"
-      }
-    ]
-  },
-  {
-    "featureType": "road",
-    "elementType": "geometry.fill",
-    "stylers": [
-      {
-        "color": "#2c2c2c"
-      }
-    ]
-  },
-  {
-    "featureType": "road",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#8a8a8a"
-      }
-    ]
-  },
-  {
-    "featureType": "road.arterial",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#373737"
-      }
-    ]
-  },
-  {
-    "featureType": "road.highway",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#3c3c3c"
-      }
-    ]
-  },
-  {
-    "featureType": "road.highway.controlled_access",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#4e4e4e"
-      }
-    ]
-  },
-  {
-    "featureType": "road.local",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#616161"
-      }
-    ]
-  },
-  {
-    "featureType": "transit",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#757575"
-      }
-    ]
-  },
-  {
-    "featureType": "water",
-    "elementType": "geometry",
-    "stylers": [
-      {
-        "color": "#000000"
-      }
-    ]
-  },
-  {
-    "featureType": "water",
-    "elementType": "labels.text.fill",
-    "stylers": [
-      {
-        "color": "#3d3d3d"
-      }
-    ]
-  }
-]
 
 export default BasicMap;

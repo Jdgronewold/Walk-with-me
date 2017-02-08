@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { bindAll, merge, isEmpty } from 'lodash';
 import {
   AppRegistry,
   StyleSheet,
@@ -17,40 +18,115 @@ class Login extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      user: {}
+      user: {},
+      accessToken: ''
     };
 
-    this.checkLogin = this.checkLogin.bind(this);
+    bindAll(this,
+      "_userLogin", '_saveToDataBaseAndPush',
+      "_pushToMap", "_facebookResponseCallback");
   }
 
-  checkLogin() {
+  _userLogin() {
+    // only do this if we are actually on login page (prevents error when connection
+    // is slow)
     if (this.props.navigator.navigationContext._currentRoute.title !== "map") {
+      // check/get info about user
+      // maybe implement a check here for if isEmpty(this.state.user)
+      // if it isn't empty, we probably are already logged in and don't need
+      // to refetch all the data
       AccessToken.getCurrentAccessToken().then(
         (data) => {
           if (data !== null) {
-            firebase.database().ref('users/' + data.userID).once("value")
-            .then( (snapshot) => {
-              // Operating on the assumption that if data exists
-              // then the user will also exist in the database with all
-              // the appropriate data`
-              return snapshot.val();
-            }).then( (user) => {
-              this.props.navigator.push({
-                component: BasicMap,
-                title: 'map',
-                passProps: { user: user }
-              });
-            }).catch(err => console.log(err));
+            let accessToken = data.accessToken;
+            const credential = firebase.auth.FacebookAuthProvider.credential(data.accessToken);
+            firebase.auth().signInWithCredential(credential);
+            if(this.state.accessToken.length === 0) {
+              this.setState({accessToken}, () => console.log("accessToken saved"));
+            }
+            return accessToken;
           } else {
-            console.log("Data was null, timing seemed to be off.");
+            throw "I don't think you are logged in";
           }
-        }
-      );
+        }).then((token) => {
+          const infoRequest = new GraphRequest(
+            '/me',
+            {
+              accessToken: token,
+              parameters: {
+                fields: {
+                  string: 'name, gender'
+                }
+              }
+            },
+            this._facebookResponseCallback
+          );
+          // this is effectively calling this._facebookResponseCallback
+          new GraphRequestManager().addRequest(infoRequest).start();
+        }).catch(err => {
+          console.log(err);
+        });
+
+      }
+    }
+
+  _facebookResponseCallback(error, result) {
+    if(error){
+      console.log(error);
+      alert('Error fetching data: ' + error.toString());
+    } else {
+      if(result.gender === 'boop'){
+        LoginManager.logOut();
+        firebase.auth().signOut();
+        alert('Sorry, only women are currently allowed on Walk With Me.');
+      }
+
+      this._saveToDataBaseAndPush(result);
     }
   }
 
+  _saveToDataBaseAndPush(result) {
+    const user = {
+      userID: result.id,
+      name: result.name,
+      gender: result.gender,
+      // get from state -> only problem is if we get here before
+      // the setState in the first .then has not returned
+      accessToken: this.state.accessToken
+    };
+
+    // if we don't need to save the user to state, then don't
+    // this.setState({
+    //   user: user
+    // });
+
+    // Save to DB
+    let ref = firebase.database().ref('users/' + result.id);
+    ref.once("value")
+    .then(function(snapshot) {
+      let exists = snapshot.exists();
+      if (exists === false) {
+        firebase.database().ref('users/' + result.id).set(user);
+      }
+    });
+
+    // push Navigator
+    this._pushToMap(user);
+  }
+
+  _pushToMap(user) {
+    this.props.navigator.push({
+      component: BasicMap,
+      title: 'map',
+      passProps: { user: user }
+    });
+  }
+
+
   render() {
-    this.checkLogin();
+    if (this.state.accessToken.length === 0) {
+      this._userLogin();
+    }
     return (
       <Image source={require('./street-background.png')}
              style={styles.image}>
@@ -68,70 +144,17 @@ class Login extends Component {
           <LoginButton
             onLoginFinished={
               (err, res) => {
+                console.log(res);
                 if (err) {
                   alert("login has error: " + res.error);
                 } else if (res.isCancelled) {
-                  alert("login is cancelled.");
+                  alert("login was cancelled.");
                 } else {
-
-                  AccessToken.getCurrentAccessToken().then(
-                    (data) => {
-                      let accessToken = data.accessToken;
-                      const credential = firebase.auth.FacebookAuthProvider.credential(data.accessToken);
-
-                      const responseInfoCallback = (error, result) => {
-                        if(error){
-                          console.log(error);
-                          alert('Error fetching data: ' + error.toString());
-                        } else {
-                          if(result.gender === 'boop'){
-                            LoginManager.logOut();
-                            firebase.auth().signOut();
-                            alert('Sorry, only women are currently allowed on Walk With Me.');
-                          }
-
-                          const user = {
-                            userID: result.id,
-                            name: result.name,
-                            gender: result.gender,
-                            accessToken: accessToken
-                          };
-
-                          this.setState({
-                            user: user
-                          });
-                          let ref = firebase.database().ref('users/' + result.id);
-                          ref.once("value")
-                          .then(function(snapshot) {
-                            let exists = snapshot.exists();
-                            if (exists === false) {
-                              firebase.database().ref('users/' + result.id).set(user);
-                            }
-                          });
-                          console.log("hit redirect");
-                          this.checkLogin();
-                        }
-                      };
-                      const infoRequest = new GraphRequest(
-                        '/me',
-                        {
-                          accessToken: accessToken,
-                          parameters: {
-                            fields: {
-                              string: 'name, gender'
-                            }
-                          }
-                        },
-                        responseInfoCallback
-                      );
-                      console.log(firebase.auth().currentUser);
-                      new GraphRequestManager().addRequest(infoRequest).start();
-                      return firebase.auth().signInWithCredential(credential);
-                    });
+                  this._userLogin();
                   }
                 }
               }
-              onLogoutFinished={() => alert("logout.")}/>
+              onLogoutFinished={() => alert("logout")}/>
           </View>
         </View>
       </Image>
