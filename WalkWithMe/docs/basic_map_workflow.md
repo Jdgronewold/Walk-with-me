@@ -37,8 +37,8 @@
 
 * Author's listener for completedMatches picks up the addition
 * Author has a pop-up saying her match has been accepted, with a button to view
-  * firebase listener for `child_removed` on `matchedRoutes` turned **ON**
-* Author deletes the matchedRoute entry (alerting the Follower that the completedMatch was received
+  * firebase listener for `child_removed` on `matchedRoutes` turned **OFF**
+* Author deletes the matchedRoute entry (alerting the Follower that the completedMatch was received)
 * Author deletes both her and the follower's route from the database
 * Author is told to follow the blue line to reach the follower
 
@@ -56,4 +56,6 @@
 #### Author *sees* matchedRoute deletion
 
 * Author gets an alert, given the choice to create a new route or keep searching
+  * firebase listener for `child_removed` on `matchedRoutes` turned **OFF**
+  * firebase listener for `child_added` on `completedMatches` turned **OFF**
 * Resets back to how things were before match requested

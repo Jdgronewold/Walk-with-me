@@ -322,7 +322,13 @@ _completedMatchCallback(data){
 
 _rejectedMatchCallback(data){
   // Lazy way of doing things, creates extra google requests
-  // Can be optimized
+  // Can be optimized because it recalls _saveRoute
+  let completedMatchesRef = firebase.database().ref('completedMatches');
+  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
+  matchedRoutesRef.off("child_removed", this._rejectedMatchCallback);
+  completedMatchesRef.off("child_added", this._completedMatchCallback);
+
+
   Alert.alert(
     'Match was cancelled',
     'Would you like to make a new route or continue searching?',
