@@ -48,33 +48,19 @@ class BasicMap extends React.Component {
      matchedRouteKey: ''
    };
 
-   // if lodash works in react native we should definitely use
-   // bindAll(this, ...)
-   this.makeMarker = this.makeMarker.bind(this);
-   this.destinationButton = this.destinationButton.bind(this);
-   this.searchButtons = this.searchButtons.bind(this);
-   this.matchButtons = this.matchButtons.bind(this);
-   this.renderButtons = this.renderButtons.bind(this);
-   this.haversine = this.haversine.bind(this);
-   this.getRouteByStartAndHaversine = this.getRouteByStartAndHaversine.bind(this);
-   this.getRouteByChildValue = this.getRouteByChildValue.bind(this);
-   this._openSearchModal = this._openSearchModal.bind(this);
-   this._createRouteCoordinates = this._createRouteCoordinates.bind(this);
-   this._saveRoute = this._saveRoute.bind(this);
-   this._showSelectedRoute =  this._showSelectedRoute.bind(this);
-   this._fitScreen = this._fitScreen.bind(this);
-   this._nearbyRoutesCallback = this._nearbyRoutesCallback.bind(this);
-   this._setListenersOnNewRoute = this._setListenersOnNewRoute.bind(this);
-   this._matchedRoutesCallback = this._matchedRoutesCallback.bind(this);
-   this._sendMatchRequest = this._sendMatchRequest.bind(this);
-   this._setListenersOnNewMatchRequest = this._setListenersOnNewMatchRequest.bind(this);
-   this._completedMatchCallback = this._completedMatchCallback.bind(this);
-   this._rejectedMatchCallback = this._rejectedMatchCallback.bind(this);
-   this._approveMatch = this._approveMatch.bind(this);
-   this._denyMatch = this._denyMatch.bind(this);
-   this._alertAuthorIncoming = this._alertAuthorIncoming.bind(this);
+   bindAll(this,
+     'makeMarker', 'destinationButton', 'searchButtons',
+     'matchButtons', 'renderButtons', 'haversine',
+     'getRouteByStartAndHaversine', 'getRouteByChildValue',
+     '_openSearchModal', '_createRouteCoordinates',
+     '_saveRoute', '_showSelectedRoute', '_fitScreen',
+     '_nearbyRoutesCallback', '_setListenersOnNewRoute',
+     '_matchedRoutesCallback', '_sendMatchRequest',
+     '_setListenersOnNewMatchRequest', '_completedMatchCallback',
+     '_rejectedMatchCallback', '_approveMatch', '_denyMatch',
+     '_alertAuthorIncoming'
+   );
  }
-
 
 
  componentDidMount() {
@@ -633,7 +619,6 @@ render() {
         {this.renderButtons()}
 
       </View>
-
     );
   }
 }
