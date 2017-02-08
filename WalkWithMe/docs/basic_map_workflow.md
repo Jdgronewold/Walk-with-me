@@ -33,7 +33,7 @@
 * Follower takes the matchedResult and saves it to the completedMatches data slice
 * Follower waits for notice that Author has seen the event
 
-#### Author *see's* acceptance
+#### Author *sees* acceptance
 
 * Author's listener for completedMatches picks up the addition
 * Author has a pop-up saying her match has been accepted, with a button to view
@@ -42,7 +42,7 @@
 * Author deletes both her and the follower's route from the database
 * Author is told to follow the blue line to reach the follower
 
-#### Follower *see's* acceptance
+#### Follower *sees* acceptance
 
 * Given an alert that the author is incoming
 
@@ -53,7 +53,7 @@
 * Follower removes matchedRoute from the database (author is alerted)
 * Resets back to how things were before match requested
 
-#### Author *see's* matchedRoute deletion
+#### Author *sees* matchedRoute deletion
 
 * Author gets an alert, given the choice to create a new route or keep searching
 * Resets back to how things were before match requested
