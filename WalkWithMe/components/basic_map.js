@@ -1,16 +1,11 @@
 import React, { Component } from 'react';
-import { bindAll, merge } from 'lodash';
+import { bindAll, merge, isEmpty } from 'lodash';
 import {
-  AppRegistry,
-  StyleSheet,
-  Text,
-  View,
-  Navigator,
-  Dimensions,
-  TouchableOpacity,
-  Button,
-  Image,
-  Alert
+  AppRegistry, StyleSheet,
+  Text, View, Navigator,
+  Dimensions, TouchableOpacity,
+  Button, Image, Alert,
+  Modal, ActivityIndicator
 } from 'react-native';
 import { basicStyles, mapStyle } from './styles';
 
@@ -42,11 +37,17 @@ class BasicMap extends React.Component {
      nearbyRoutes: {} ,
      selectRouteMarkers: [],
      selectRoutePolylineCoords: [],
-     matchedRoute: false,
-     disableButtons: false,
-     routeKey: '',
-     matchedRouteKey: ''
+     matchedRouteKey: '',
+     routeKey: undefined,
+     matchedRoute: false, // set by follower when match request received <- combine with match request?
+     spinner: false, // set to show spinner on match sent
+     matchRequest: false // set for Author when match request sent
    };
+
+
+   this.completedMatchesRef = firebase.database().ref('completedMatches');
+   this.matchedRoutesRef = firebase.database().ref('matchedRoutes');
+   this.routesRef = firebase.database().ref('routes');
 
    bindAll(this,
      'makeMarker', 'destinationButton', 'searchButtons',
@@ -58,7 +59,8 @@ class BasicMap extends React.Component {
      '_matchedRoutesCallback', '_sendMatchRequest',
      '_setListenersOnNewMatchRequest', '_completedMatchCallback',
      '_rejectedMatchCallback', '_approveMatch', '_denyMatch',
-     '_alertAuthorIncoming'
+     '_alertAuthorIncoming', 'insertModal', 'cancelMatchButtons',
+     '_cancelRequest', '_authorCancelledCallback'
    );
  }
 
@@ -85,6 +87,11 @@ componentDidUpdate() {
 }
 
 _openSearchModal() {
+
+  if(typeof this.state.routeKey !== 'undefined') {
+    firebase.database().ref('routes/' + this.state.routeKey).remove();
+  }
+
   RNGooglePlaces.openAutocompleteModal()
   .then((place) => {
     const endpos = {
@@ -128,9 +135,14 @@ _createRouteCoordinates(data) {
    return polylineCoords;
  }
 
- _saveRoute(){
-   let routesRef = firebase.database().ref('routes');
-   let newRouteRef = routesRef.push();
+ _saveRoute(range){
+   this._setListenersOnNewRoute(range);
+
+   if(typeof this.state.routeKey !== 'undefined') {
+     firebase.database().ref('routes/' + this.state.routeKey).remove();
+   }
+
+   let newRouteRef = this.routesRef.push();
    let imgUrl;
    getFacebookPhoto({userID: this.props.user.userID, accessToken: this.props.user.accessToken}).then(
      (data) => {
@@ -144,25 +156,28 @@ _createRouteCoordinates(data) {
          routePoly: this.state.polylineCoords,
          imgUrl: imgUrl
        });
+     }).then(
+       () => {
+         this.setState({
+           routeKey: newRouteRef.key
+         });
+       }).then(() => {
+         // potentially put check for no nearby routes here
      });
-   this.setState({routeKey: newRouteRef.key});
-   this._setListenersOnNewRoute();
  }
 
- _setListenersOnNewRoute() {
-   let routesRef = firebase.database().ref('routes');
-   const startLat = this.state.startPosition.latitude - 0.01;
-   const endLat = this.state.startPosition.latitude + 0.01;
-   routesRef.orderByChild("startPosition/latitude")
+ _setListenersOnNewRoute(range) {
+   const startLat = this.state.startPosition.latitude - range;
+   const endLat = this.state.startPosition.latitude + range;
+   this.routesRef.orderByChild("startPosition/latitude")
    .startAt(startLat)
    .endAt(endLat)
    .on('child_added', this._nearbyRoutesCallback);
-   routesRef.orderByChild("startPosition/latitude")
+   this.routesRef.orderByChild("startPosition/latitude")
    .startAt(startLat)
    .endAt(endLat)
    .on('child_removed', this._nearbyRoutesCallback);
-   let matchedRoutesRef = firebase.database().ref('matchedRoutes');
-   matchedRoutesRef.orderByChild("follower/userID")
+   this.matchedRoutesRef.orderByChild("follower/userID")
    .equalTo(this.props.user.userID)
    .on("child_added", this._matchedRoutesCallback);
  }
@@ -190,6 +205,11 @@ _nearbyRoutesCallback(data) {
 
 _matchedRoutesCallback(data) {
 
+  // set a listner for the author cancelling the match
+  this.matchedRoutesRef.orderByChild("follower/userID")
+  .equalTo(this.props.user.userID)
+  .on("child_removed", this._authorCancelledCallback);
+
   const authorName = data.val().author.username;
   Alert.alert(
     'You have a Match!',
@@ -198,6 +218,21 @@ _matchedRoutesCallback(data) {
       {text: 'View Route', onPress: () => this._showPotentialMatch(data)},
     ]
   );
+}
+
+_authorCancelledCallback(data) {
+  const authorName = data.val().author.username;
+  Alert.alert(
+    "Matched removed",
+    `${authorName} cancelled the match, please find another`
+  );
+
+  this.setState({
+    selectRouteMarkers: [],
+    selectRoutePolylineCoords: [],
+    matchedRouteKey: '',
+    matchedRoute: false
+  });
 }
 
 _showPotentialMatch(data){
@@ -251,8 +286,7 @@ _fitScreen() {
 _sendMatchRequest() {
 
   const route = this.getRouteByStartAndHaversine();
-  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
-  let matchedRouteKey = matchedRoutesRef.push();
+  let matchedRouteKey = this.matchedRoutesRef.push();
   matchedRouteKey.set({
     author: {
       userID: this.props.user.userID,
@@ -266,28 +300,37 @@ _sendMatchRequest() {
     },
     key: matchedRouteKey.key
   });
-  this.setState({disableButtons: true});
+  this.setState({
+    matchedRouteKey: matchedRouteKey.key,
+    matchRequest: true
+  });
   this._setListenersOnNewMatchRequest();
 }
 
+_cancelRequest() {
+  this.completedMatchesRef.off("child_added", this._completedMatchCallback);
+  this.matchedRoutesRef.off("child_removed", this._matchedRoutesCallback);
+
+  firebase.database()
+    .ref('matchedRoutes/' + this.state.matchedRouteKey).remove();
+  this.setState({matchRequest: false});
+  this._setListenersOnNewRoute(0.01);
+}
+
 _setListenersOnNewMatchRequest() {
-  let routesRef = firebase.database().ref('routes');
-  routesRef.off("child_added", this._nearbyRoutesCallback);
-  routesRef.off("child_removed", this._nearbyRoutesCallback);
-  let completedMatchesRef = firebase.database().ref('completedMatches');
-  completedMatchesRef.orderByChild("author/userID")
+  this.routesRef.off("child_added", this._nearbyRoutesCallback);
+  this.routesRef.off("child_removed", this._nearbyRoutesCallback);
+  this.completedMatchesRef.orderByChild("author/userID")
     .equalTo(this.props.user.userID)
     .on("child_added", this._completedMatchCallback);
-  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
-  matchedRoutesRef.orderByChild("author/userID")
+  this.matchedRoutesRef.orderByChild("author/userID")
     .equalTo(this.props.user.userID)
     .on("child_removed", this._rejectedMatchCallback);
-  matchedRoutesRef.off("child_added", this._matchedRoutesCallback);
+  this.matchedRoutesRef.off("child_added", this._matchedRoutesCallback);
 }
 
 _completedMatchCallback(data){
-  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
-  matchedRoutesRef.off("child_removed", this._rejectedMatchCallback);
+  this.matchedRoutesRef.off("child_removed", this._rejectedMatchCallback);
   const route = this.getRouteByChildValue('name', data.val().follower.username);
   const opts = {
     fromCoords: this.state.startPosition,
@@ -323,10 +366,8 @@ _completedMatchCallback(data){
 _rejectedMatchCallback(data){
   // Lazy way of doing things, creates extra google requests
   // Can be optimized because it recalls _saveRoute
-  let completedMatchesRef = firebase.database().ref('completedMatches');
-  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
-  matchedRoutesRef.off("child_removed", this._rejectedMatchCallback);
-  completedMatchesRef.off("child_added", this._completedMatchCallback);
+  this.matchedRoutesRef.off("child_removed", this._rejectedMatchCallback);
+  this.completedMatchesRef.off("child_added", this._completedMatchCallback);
 
 
   Alert.alert(
@@ -334,18 +375,16 @@ _rejectedMatchCallback(data){
     'Would you like to make a new route or continue searching?',
     [
       {text: 'New Route', onPress: () => this._openSearchModal()},
-      {text: 'Continue Searching', onPress: () => this._saveRoute()},
+      {text: 'Continue Searching', onPress: () => this._saveRoute(0.01)},
     ]
   );
 }
 
 _approveMatch(){
-  let routesRef = firebase.database().ref('routes');
-  let matchedRoutesRef = firebase.database().ref('matchedRoutes');
-  routesRef.off("child_added", this._nearbyRoutesCallback);
-  routesRef.off("child_removed", this._nearbyRoutesCallback);
-  matchedRoutesRef.off("child_added", this._matchedRoutesCallback);
-  matchedRoutesRef.orderByChild("follower/userID")
+  this.routesRef.off("child_added", this._nearbyRoutesCallback);
+  this.routesRef.off("child_removed", this._nearbyRoutesCallback);
+  this.matchedRoutesRef.off("child_added", this._matchedRoutesCallback);
+  this.matchedRoutesRef.orderByChild("follower/userID")
     .equalTo(this.props.user.userID)
     .on("child_removed", this._alertAuthorIncoming);
 
@@ -360,8 +399,7 @@ _approveMatch(){
   this.setState({ nearbyRoutes: tempNearby});
 
   const route = this.getRouteByStartAndHaversine();
-  let completedMatchesRef = firebase.database().ref('completedMatches');
-  let completedMatchKey = completedMatchesRef.push();
+  let completedMatchKey = this.completedMatchesRef.push();
   // remember that the current user is the follower here!
   completedMatchKey.set({
     author: {
@@ -454,14 +492,14 @@ makeMarker(location, pos, title) {
   this.setState({[pos]: location, markers: markers});
 }
 
-destinationButton() {
+destinationButton(text) {
   return(
     <TouchableOpacity
       style={basicStyles.button, basicStyles.bubble}
       disabled={this.state.disableButtons}
       onPress={() => this._openSearchModal()}
       >
-      <Text>Pick a destination</Text>
+      <Text>{`${text}`}</Text>
     </TouchableOpacity>
   );
 }
@@ -472,7 +510,7 @@ searchButtons(){
     if (this.state.selectRouteMarkers.length > 0 ) {
       return(
         <View style={basicStyles.buttonContainer}>
-          {this.destinationButton()}
+          {this.destinationButton("Pick a destination")}
 
           <TouchableOpacity
             style={basicStyles.button, basicStyles.bubble}
@@ -481,26 +519,43 @@ searchButtons(){
             >
             <Text>Match Route</Text>
           </TouchableOpacity>
-      </View>
-    );
-    } else {
-      return(
-        <View style={basicStyles.buttonContainer}>
-          {this.destinationButton()}
-
-          <TouchableOpacity
-            style={basicStyles.button, basicStyles.bubble}
-            onPress={() => this._saveRoute()}
-            >
-            <Text>Set Route</Text>
-          </TouchableOpacity>
         </View>
       );
+    } else {
+      if(typeof this.state.routeKey === 'undefined') {
+        return(
+          <View style={basicStyles.buttonContainer}>
+            {this.destinationButton("Pick a destination")}
+
+            <TouchableOpacity
+              style={basicStyles.button, basicStyles.bubble}
+              onPress={() => this._saveRoute(0.01)}
+              >
+              <Text>Set Route</Text>
+            </TouchableOpacity>
+          </View>
+        );
+      } else {
+        // put some kinda of alert here for if there are no nearby routes?
+        // or button to expand the latitude
+        return (
+          <View style={basicStyles.buttonContainer}>
+            { this.destinationButton("Pick a new destination") }
+
+            <TouchableOpacity
+              style={basicStyles.button, basicStyles.bubble}
+              onPress={() => this._saveRoute(0.02)}
+              >
+              <Text>Expand Search </Text>
+            </TouchableOpacity>
+          </View>
+        );
+      }
     }
   } else {
     return (
       <View style={basicStyles.buttonContainer}>
-        { this.destinationButton() }
+        { this.destinationButton("Pick a destination") }
       </View>
     );
   }
@@ -526,16 +581,71 @@ matchButtons(){
 );
 }
 
+cancelMatchButtons() {
+  return(
+    <View style={basicStyles.buttonContainer}>
+
+      <ActivityIndicator
+        animating={true}
+        size='large'
+        color='#ba0be0'
+        />
+
+      <TouchableOpacity
+        style={basicStyles.button, basicStyles.bubble}
+        onPress={() => this._cancelRequest()}
+        >
+        <Text> Cancel Match Request</Text>
+      </TouchableOpacity>
+
+      <ActivityIndicator
+        animating={true}
+        size='large'
+        color='#ba0be0'
+        />
+    </View>
+  );
+}
+
 renderButtons() {
   if (this.state.matchedRoute) {
     return (
       this.matchButtons()
+    );
+  } else if(this.state.matchRequest) {
+    return (
+      this.cancelMatchButtons()
     );
   } else {
     return (
       this.searchButtons()
     );
   }
+}
+
+insertModal() {
+  return (
+    <Modal
+      animationType={"slide"}
+      transparent={true}
+      visible={this.state.spinner}
+    >
+      <View style={basicStyles.buttonContainer}>
+        <ActivityIndicator
+          animating={true}
+          size='large'
+          color='#ba0be0'
+        />
+
+        <TouchableOpacity
+          style={basicStyles.button, basicStyles.bubble}
+          onPress={() => this.setState({spinner: false})}
+          >
+          <Text> Cancel Match Request</Text>
+        </TouchableOpacity>
+      </View>
+    </Modal>
+  );
 }
 
 
