@@ -41,7 +41,8 @@ class BasicMap extends React.Component {
      routeKey: undefined,
      matchedRoute: false, // set by follower when match request received <- combine with match request?
      spinner: false, // set to show spinner on match sent
-     matchRequest: false // set for Author when match request sent
+     matchRequest: false, // set for Author when match request sent
+     renderCircle: false // set when expanding search
    };
 
 
@@ -60,7 +61,8 @@ class BasicMap extends React.Component {
      '_setListenersOnNewMatchRequest', '_completedMatchCallback',
      '_rejectedMatchCallback', '_approveMatch', '_denyMatch',
      '_alertAuthorIncoming', 'insertModal', 'cancelMatchButtons',
-     '_cancelRequest', '_authorCancelledCallback'
+     '_cancelRequest', '_authorCancelledCallback', 'updateFromChild',
+     'renderCircle'
    );
  }
 
@@ -83,7 +85,18 @@ componentDidUpdate() {
   if (Object.keys(this.state.endPosition).length !== 0 &&
       Object.keys(this.state.startPosition).length !== 0) {
         this._fitScreen();
-      }
+  }
+  // if(this.state.renderCircle && this.state.iterations < 21) {
+  //   let deltaRad = 55.16 * this.state.iterations;
+  //   let radius = 551.6 + deltaRad;
+  //   let newIter = this.state.iterations += 1;
+  //   // debugger
+  //   console.log(newIter);
+  //   this.setState({
+  //     radius: radius,
+  //     iterations: newIter
+  //   });
+  // }
 }
 
 _openSearchModal() {
@@ -485,6 +498,24 @@ getRouteByChildValue(child, value){
   return route;
 }
 
+updateFromChild(property, value) {
+  this.setState({[property]: value});
+}
+
+renderCircle(){
+  if(this.state.renderCircle) {
+    return (
+      <MapView.Circle
+        center={this.state.startPosition}
+        radius={this.state.radius}
+        strokeWidth={2}
+        strokeColor='#ba0be0'
+        fillColor={'rgba(0, 0, 0, 0.1)'}
+        />
+    );
+  }
+}
+
 makeMarker(location, pos, title) {
   const selfMarker = {
     latlng: location,
@@ -502,7 +533,6 @@ destinationButton(text) {
   return(
     <TouchableOpacity
       style={basicStyles.button, basicStyles.bubble}
-      disabled={this.state.disableButtons}
       onPress={() => this._openSearchModal()}
       >
       <Text>{`${text}`}</Text>
@@ -520,7 +550,6 @@ searchButtons(){
 
           <TouchableOpacity
             style={basicStyles.button, basicStyles.bubble}
-            disabled={this.state.disableButtons}
             onPress={() => this._sendMatchRequest()}
             >
             <Text>Match Route</Text>
@@ -550,7 +579,11 @@ searchButtons(){
 
             <TouchableOpacity
               style={basicStyles.button, basicStyles.bubble}
-              onPress={() => this._saveRoute(0.02)}
+              onPress={() => {
+                this.setState({renderCircle: true});
+                this._saveRoute(0.02);
+              }
+            }
               >
               <Text>Expand Search </Text>
             </TouchableOpacity>
@@ -676,67 +709,58 @@ render() {
               latitudeDelta: LATITUDE_DELTA,
               longitudeDelta: LONGITUDE_DELTA,
             }}
-          >
+            >
 
-          {this.state.markers.map( (marker, idx) => (
-            <Marker
-            coordinate={marker.latlng}
-            title={marker.title}
-            key={idx}
-            />
-          ))}
-
-          {
-            Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
+            {this.state.markers.map( (marker, idx) => (
               <Marker
-                coordinate={this.state.nearbyRoutes[key].startPosition}
-                key={key}
-                title={this.state.nearbyRoutes[key].name}
-                pinColor="#39FF14"
-                onPress={() => {
-                  const markerKey = key;
-                  this._showSelectedRoute(markerKey);
-                }}>
-                <MapView.Callout tooltip style={basicStyles.customView}>
+                coordinate={marker.latlng}
+                title={marker.title}
+                key={idx}
+                />
+            ))}
 
-                  <CustomCallout>
-                    <Text>{this.state.nearbyRoutes[key].name}</Text>
+            {
+              Object.keys(this.state.nearbyRoutes).map( (key, idx) => (
+                <Marker
+                  coordinate={this.state.nearbyRoutes[key].startPosition}
+                  key={key}
+                  title={this.state.nearbyRoutes[key].name}
+                  pinColor="#39FF14"
+                  onSelect={() => {
+                    const markerKey = key;
+                    this._showSelectedRoute(markerKey);
+                  }}>
+
+                  <View>
                     <Image
-                      style={basicStyles.userLargeIcon}
+                      style={basicStyles.userIcon}
                       source={{uri: this.state.nearbyRoutes[key].imgUrl}}
                       />
-                  </CustomCallout>
-                </MapView.Callout>
+                  </View>
+                </Marker>
+              ))
+            }
 
-              <View>
-                <Image
-                  style={basicStyles.userIcon}
-                  source={{uri: this.state.nearbyRoutes[key].imgUrl}}
-                  />
-              </View>
-            </Marker>
-          ))
-        }
+            {this.state.selectRouteMarkers[1] &&
+              <Marker
+                coordinate={this.state.selectRouteMarkers[1]}
+                pinColor={this.state.matchedRoute ? "#dd0048" : "#37fdfc"}
+                />
+            }
 
-        {this.state.selectRouteMarkers[1] &&
-          <Marker
-            coordinate={this.state.selectRouteMarkers[1]}
-            pinColor={this.state.matchedRoute ? "#dd0048" : "#37fdfc"}
-            />
-        }
+            <MapView.Polyline
+              coordinates={this.state.polylineCoords}
+              strokeWidth={3}
+              strokeColor="#ba0be0"
+              />
 
-        <MapView.Polyline
-          coordinates={this.state.polylineCoords}
-          strokeWidth={3}
-          strokeColor="#ba0be0"
-        />
+            <MapView.Polyline
+              coordinates={this.state.selectRoutePolylineCoords}
+              strokeWidth={3}
+              strokeColor={this.state.matchedRoute ? "#dd0048" : "#37fdfc"}
+              />
 
-        <MapView.Polyline
-          coordinates={this.state.selectRoutePolylineCoords}
-          strokeWidth={3}
-          strokeColor={this.state.matchedRoute ? "#dd0048" : "#37fdfc"}
-        />
-        </MapView>
+          </MapView>
 
         {this.renderButtons()}
 
@@ -746,5 +770,20 @@ render() {
 }
 }
 
+// onPress={() => {
+//   const markerKey = key;
+//   this._showSelectedRoute(markerKey);
+// }}
+
+// <MapView.Callout tooltip style={basicStyles.customView}>
+//
+//   <CustomCallout>
+//     <Text>{this.state.nearbyRoutes[key].name}</Text>
+//     <Image
+//       style={basicStyles.userLargeIcon}
+//       source={{uri: this.state.nearbyRoutes[key].imgUrl}}
+//       />
+//   </CustomCallout>
+// </MapView.Callout>
 
 export default BasicMap;
