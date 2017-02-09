@@ -108,7 +108,13 @@ _openSearchModal() {
     getDirections(opts)
     .then(data => this._createRouteCoordinates(data))
     .then(polylineCoords => {
-      this.setState({polylineCoords});
+      this.setState({
+        polylineCoords: polylineCoords,
+        selectRouteMarkers: [],
+        selectRoutePolylineCoords: [],
+        matchedRouteKey: '',
+        matchedRoute: false
+      });
     });
   })
   .catch(error => console.log(error.message));
