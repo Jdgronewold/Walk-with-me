@@ -10,7 +10,7 @@ export const basicStyles = StyleSheet.create({
   },
  container: {
    ...StyleSheet.absoluteFillObject,
-   justifyContent: 'flex-end',
+   justifyContent: 'space-between',
  },
   map: {
     ...StyleSheet.absoluteFillObject,
@@ -45,6 +45,25 @@ export const basicStyles = StyleSheet.create({
     width: 80,
     marginVertical: 5,
   },
+  selectedDetail: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    borderRadius: 40,
+    alignItems: 'center',
+    marginTop: 30
+  },
+  selectedFont: {
+    color: '#ba0be0',
+    margin: 10,
+    fontSize: 20,
+    fontWeight: 'bold'
+  },
+  selectedIcon: {
+    height: 80,
+    width: 80,
+    borderRadius: 40
+  }
 });
 
 export const mapStyle = [
