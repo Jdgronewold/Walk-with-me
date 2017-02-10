@@ -21,7 +21,7 @@ const { width, height } = Dimensions.get('window');
 const ASPECT_RATIO = width / height;
 // const LATITUDE = 37.78825;
 // const LONGITUDE = -122.4324;
-const LATITUDE_DELTA = 0.0922;
+const LATITUDE_DELTA = 0.006866;
 const LONGITUDE_DELTA = LATITUDE_DELTA * ASPECT_RATIO;
 
 
@@ -40,6 +40,7 @@ class BasicMap extends React.Component {
      matchedRouteKey: '',
      routeKey: undefined,
      matchedRoute: false, // set by follower when match request received <- combine with match request?
+     completedMatch: false, // set by the author when a completed match has been seen
      spinner: false, // set to show spinner on match sent
      matchRequest: false, // set for Author when match request sent
      routeSelected: false, // set when clicking on a marker
@@ -85,7 +86,17 @@ componentDidUpdate() {
   // might need to also update the markers here if we move the start marker
   if (Object.keys(this.state.endPosition).length !== 0 &&
       Object.keys(this.state.startPosition).length !== 0) {
+      if(this.state.completedMatch) {
+        const newRegion = {
+          latitude: this.state.startPosition.latitude,
+          longitude: this.state.startPosition.longitude,
+          latitudeDelta: LATITUDE_DELTA,
+          longitudeDelta: LONGITUDE_DELTA
+        };
+        this.map.animateToRegion(newRegion);
+      } else {
         this._fitScreen();
+      }
   }
   // if(this.state.renderCircle && this.state.iterations < 21) {
   //   let deltaRad = 55.16 * this.state.iterations;
@@ -362,6 +373,7 @@ _completedMatchCallback(data){
   .then(directionsData => this._createRouteCoordinates(directionsData))
   .then(polylineCoords => {
     this.setState({
+      completedMatch: true,
       nearbyRoutes: {},
       selectRouteMarkers: [this.state.startPosition, route.startPosition],
       selectRoutePolylineCoords: polylineCoords
@@ -797,25 +809,6 @@ render() {
   }
 }
 }
-
-// title={this.state.nearbyRoutes[key].name}
-
-// onPress={() => {
-//   const markerKey = key;
-//   this._showSelectedRoute(markerKey);
-// }}
-
-// <MapView.Callout tooltip style={basicStyles.customView}>
-//
-//   <CustomCallout>
-//     <Text>{this.state.nearbyRoutes[key].name}</Text>
-//     <Image
-//       style={basicStyles.userLargeIcon}
-//       source={{uri: this.state.nearbyRoutes[key].imgUrl}}
-//       />
-//   </CustomCallout>
-// </MapView.Callout>
-
 
 
 
