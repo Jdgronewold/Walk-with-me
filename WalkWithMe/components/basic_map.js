@@ -42,7 +42,8 @@ class BasicMap extends React.Component {
      matchedRoute: false, // set by follower when match request received <- combine with match request?
      spinner: false, // set to show spinner on match sent
      matchRequest: false, // set for Author when match request sent
-     renderCircle: false // set when expanding search
+     routeSelected: false, // set when clicking on a marker
+     routeSelectedKey: '' // haversineKey of selected route
    };
 
 
@@ -284,6 +285,8 @@ _showSelectedRoute(haversineKey) {
     const route = this.state.nearbyRoutes[haversineKey];
 
     this.setState({
+      routeSelectedKey: haversineKey,
+      routeSelected: true,
       selectRouteMarkers: [route.startPosition, route.endPosition],
       selectRoutePolylineCoords: route.routePoly
     });
@@ -662,6 +665,26 @@ renderButtons() {
   }
 }
 
+selectedDetail() {
+  const route = this.state.nearbyRoutes[this.state.routeSelectedKey];
+  if (this.state.routeSelected) {
+    return(
+      <View style={basicStyles.selectedDetail}>
+        <Image
+          style={basicStyles.selectedIcon}
+          source={{uri: route.imgUrl}}
+          />
+        <Text style={basicStyles.selectedFont}> {route.name} </Text>
+        <Text style={basicStyles.selectedFont}> Message </Text>
+      </View>
+    );
+  } else {
+    return (
+      <View></View>
+    )
+  }
+}
+
 insertModal() {
   return (
     <Modal
@@ -703,6 +726,11 @@ render() {
             style={basicStyles.map}
             customMapStyle={mapStyle}
             showsBuildings={true}
+            onPress={(e) => {
+              if(typeof e.nativeEvent.action === 'undefined') {
+                this.setState({routeSelected: false});
+              }
+            }}
             initialRegion={{
               latitude: this.state.startPosition.latitude,
               longitude: this.state.startPosition.longitude,
@@ -724,20 +752,20 @@ render() {
                 <Marker
                   coordinate={this.state.nearbyRoutes[key].startPosition}
                   key={key}
-                  title={this.state.nearbyRoutes[key].name}
+
                   pinColor="#39FF14"
-                  onSelect={() => {
+                  onPress={() => {
                     const markerKey = key;
                     this._showSelectedRoute(markerKey);
                   }}>
-
                   <View>
                     <Image
                       style={basicStyles.userIcon}
                       source={{uri: this.state.nearbyRoutes[key].imgUrl}}
                       />
                   </View>
-                </Marker>
+                  </Marker>
+
               ))
             }
 
@@ -761,7 +789,7 @@ render() {
               />
 
           </MapView>
-
+          {this.selectedDetail()}
         {this.renderButtons()}
 
       </View>
@@ -769,6 +797,8 @@ render() {
   }
 }
 }
+
+// title={this.state.nearbyRoutes[key].name}
 
 // onPress={() => {
 //   const markerKey = key;
@@ -785,5 +815,8 @@ render() {
 //       />
 //   </CustomCallout>
 // </MapView.Callout>
+
+
+
 
 export default BasicMap;
