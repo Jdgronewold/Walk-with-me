@@ -72,10 +72,11 @@ class BasicMap extends React.Component {
      '_nearbyRoutesCallback', '_setListenersOnNewRoute',
      '_matchedRoutesCallback', '_sendMatchRequest',
      '_setListenersOnNewMatchRequest', '_completedMatchCallback',
-     '_rejectedMatchCallback', '_approveMatch', '_denyMatch',
+     '_approveMatch', '_denyMatch',
      '_alertAuthorIncoming', 'insertModal', 'cancelMatchButtons',
      '_cancelRequest', '_authorCancelledCallback', 'updateFromChild',
-     'renderCircle', '_turnOffListeners', '_showPotentialMatch'
+     'renderCircle', '_turnOffListeners', '_showPotentialMatch',
+     '_followerCancelledCallback'
    );
  }
 
@@ -186,7 +187,9 @@ _createRouteCoordinates(data) {
 
    let newRouteRef = this.routesRef.push();
    let imgUrl;
-   getFacebookPhoto({userID: this.props.user.userID, accessToken: this.props.user.accessToken}).then(
+   getFacebookPhoto({
+     userID: this.props.user.userID,
+     accessToken: this.props.user.accessToken}).then(
      (data) => {
        imgUrl = data.data.url;
        newRouteRef.set({
@@ -263,24 +266,61 @@ _matchedRoutesCallback(data) {
 }
 
 _authorCancelledCallback(data) {
-  const authorName = data.val().author.username;
-  Alert.alert(
-    "Matched removed",
-    `${authorName} cancelled the match, please find another`
-  );
-
+  this._turnOffListeners();
+  // reset pretty much everything except own route data
   this.setState({
+    nearbyRoutes: {} ,
     selectRouteMarkers: [],
     selectRoutePolylineCoords: [],
+    routeSelectedKey: '',
     matchedRouteKey: '',
+    completedMatchKey: '',
     matchedRoute: false,
     completedMatch: false,
-    completedMatchKey: ''
-  }, () => {
-    // turn off the listener to be called when the author deletes
-    // also turned if if follower approves/denies
-    this.matchedRoutesRef.off("child_removed", this._authorCancelledCallback);
+    spinner: false,
+    matchRequest: false,
+    routeSelected: false,
   });
+
+  const authorName = data.val().author.username;
+  const alertText = `${authorName} cancelled the match`;
+  Alert.alert(
+     alertText,
+    'Would you like to make a new route or continue searching?',
+    [
+      {text: 'New Route', onPress: () => this._openSearchModal()},
+      {text: 'Continue Searching', onPress: () => this._saveRoute(0.01)},
+    ]
+  );
+}
+
+_followerCancelledCallback(data) {
+  this._turnOffListeners();
+  // reset pretty much everything except own route data
+  this.setState({
+    nearbyRoutes: {} ,
+    selectRouteMarkers: [],
+    selectRoutePolylineCoords: [],
+    routeSelectedKey: '',
+    matchedRouteKey: '',
+    completedMatchKey: '',
+    matchedRoute: false,
+    completedMatch: false,
+    spinner: false,
+    matchRequest: false,
+    routeSelected: false,
+  });
+
+  const followerName = data.val().follower.username;
+  const alertText = `${followerName} cancelled the match`;
+  Alert.alert(
+     alertText,
+    'Would you like to make a new route or continue searching?',
+    [
+      {text: 'New Route', onPress: () => this._openSearchModal()},
+      {text: 'Continue Searching', onPress: () => this._saveRoute(0.01)},
+    ]
+  );
 }
 
 _showPotentialMatch(data){
@@ -365,6 +405,13 @@ _sendMatchRequest() {
 
 _cancelRequest() {
   // remove the completed/matchedRoute, trigger alert, and then turn of the listner
+  this.setState({
+    completedMatch: false,
+    completedMatchKey: '',
+    matchRequest: false,
+    matchedRouteKey: ''
+  });
+
   if(this.state.completedMatch) {
     firebase.database()
       .ref('completedMatches/' + this.state.completedMatchKey).remove();
@@ -372,16 +419,17 @@ _cancelRequest() {
     firebase.database()
       .ref('matchedRoutes/' + this.state.matchedRouteKey).remove();
   }
+  // need to make this a universal button
 
   this._turnOffListeners();
-
-  this.setState({
-    completedMatch: false,
-    completedMatchKey: '',
-    matchRequest: false,
-    matchedRouteKey: ''
-  });
-  this._setListenersOnNewRoute(0.01); // is this needed?
+  Alert.alert(
+     'You cancelled the match',
+    'Would you like to make a new route or continue searching?',
+    [
+      {text: 'New Route', onPress: () => this._openSearchModal()},
+      {text: 'Continue Searching', onPress: () => this._saveRoute(0.01)},
+    ]
+  );
 }
 
 _setListenersOnNewMatchRequest() {
@@ -394,11 +442,14 @@ _setListenersOnNewMatchRequest() {
     .on("child_added", this._completedMatchCallback);
   this.matchedRoutesRef.orderByChild("author/userID")
     .equalTo(this.props.user.userID)
-    .on("child_removed", this._rejectedMatchCallback);
+    .on("child_removed", this._followerCancelledCallback);
 }
 
 _completedMatchCallback(data){
-  this.matchedRoutesRef.off("child_removed", this._rejectedMatchCallback);
+  this._turnOffListeners();
+  this.completedMatchesRef.orderByChild("author/userID")
+    .equalTo(this.props.user.userID)
+    .on("child_removed", this._followerCancelledCallback);
   const route = this.getRouteByChildValue('name', data.val().follower.username);
   const opts = {
     fromCoords: this.state.startPosition,
@@ -430,27 +481,14 @@ _completedMatchCallback(data){
   );
 }
 
-_rejectedMatchCallback(data){
-  // Lazy way of doing things, creates extra google requests
-  // Can be optimized because it recalls _saveRoute
-
-  this._turnOffListeners();
-
-  Alert.alert(
-    'Match was cancelled',
-    'Would you like to make a new route or continue searching?',
-    [
-      {text: 'New Route', onPress: () => this._openSearchModal()},
-      {text: 'Continue Searching', onPress: () => this._saveRoute(0.01)},
-    ]
-  );
-}
-
 _approveMatch(){
   this._turnOffListeners();
   this.matchedRoutesRef.orderByChild("follower/userID")
     .equalTo(this.props.user.userID)
     .on("child_removed", this._alertAuthorIncoming);
+  this.completedMatchesRef.orderByChild("follower/userID")
+    .equalTo(this.props.user.userID)
+    .on("child_removed", this._authorCancelledCallback);
 
   const dist = this.haversine(
     this.state.startPosition,
@@ -695,7 +733,7 @@ cancelMatchButtons() {
         style={basicStyles.button, basicStyles.bubble}
         onPress={() => this._cancelRequest()}
         >
-        <Text> Cancel Match Request</Text>
+        <Text> Cancel Match</Text>
       </TouchableOpacity>
 
       <ActivityIndicator
@@ -712,7 +750,7 @@ renderButtons() {
     return (
       this.matchButtons()
     );
-  } else if(this.state.matchRequest) {
+  } else if(this.state.matchRequest || this.state.completedMatch) {
     return (
       this.cancelMatchButtons()
     );
