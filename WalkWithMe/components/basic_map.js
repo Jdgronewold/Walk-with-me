@@ -37,14 +37,25 @@ class BasicMap extends React.Component {
      nearbyRoutes: {} ,
      selectRouteMarkers: [],
      selectRoutePolylineCoords: [],
+     // haversineKey of selected route
+     routeSelectedKey: '',
+     // set when author sends match/follower receives match
      matchedRouteKey: '',
-     routeKey: undefined,
-     matchedRoute: false, // set by follower when match request received <- combine with match request?
-     completedMatch: false, // set by the author when a completed match has been seen
-     spinner: false, // set to show spinner on match sent
-     matchRequest: false, // set for Author when match request sent
-     routeSelected: false, // set when clicking on a marker
-     routeSelectedKey: '' // haversineKey of selected route
+     // set when follower hits approve/author sees that event
+     completedMatchKey: '',
+     //set when route is saved to the database
+     routeKey: '',
+     // set by follower when match request received <- combine with match request?
+     matchedRoute: false,
+     // set by the author when a completed match has been seen
+     // or the follower when hits approve - renders cancel button
+     completedMatch: false,
+     // set to show spinner on match sent
+     spinner: false,
+     // set for Author when match request sent
+     matchRequest: false,
+     // set when clicking on a marker
+     routeSelected: false,
    };
 
 
@@ -64,7 +75,7 @@ class BasicMap extends React.Component {
      '_rejectedMatchCallback', '_approveMatch', '_denyMatch',
      '_alertAuthorIncoming', 'insertModal', 'cancelMatchButtons',
      '_cancelRequest', '_authorCancelledCallback', 'updateFromChild',
-     'renderCircle'
+     'renderCircle', '_turnOffListeners', '_showPotentialMatch'
    );
  }
 
@@ -113,7 +124,7 @@ componentDidUpdate() {
 
 _openSearchModal() {
 
-  if(typeof this.state.routeKey !== 'undefined') {
+  if(this.state.routeKey !== '') {
     firebase.database().ref('routes/' + this.state.routeKey).remove();
   }
 
@@ -169,7 +180,7 @@ _createRouteCoordinates(data) {
  _saveRoute(range){
    this._setListenersOnNewRoute(range);
 
-   if(typeof this.state.routeKey !== 'undefined') {
+   if(this.state.routeKey !== '') {
      firebase.database().ref('routes/' + this.state.routeKey).remove();
    }
 
@@ -262,7 +273,13 @@ _authorCancelledCallback(data) {
     selectRouteMarkers: [],
     selectRoutePolylineCoords: [],
     matchedRouteKey: '',
-    matchedRoute: false
+    matchedRoute: false,
+    completedMatch: false,
+    completedMatchKey: ''
+  }, () => {
+    // turn off the listener to be called when the author deletes
+    // also turned if if follower approves/denies
+    this.matchedRoutesRef.off("child_removed", this._authorCancelledCallback);
   });
 }
 
@@ -273,7 +290,7 @@ _showPotentialMatch(data){
   //come back and do that later
   firebase.database().ref('routes/' + data.val().author.routeKey)
     .once("value").then( (route) => {
-      const tempRoutes = Object.assign({}, this.state.nearbyRoutes);
+      const tempRoutes = merge({}, this.state.nearbyRoutes);
       const matchedHaversine = this.haversine(
         this.state.startPosition,
         route.val().startPosition
@@ -286,9 +303,15 @@ _showPotentialMatch(data){
         nearbyRoutes: tempRoutes,
         selectRouteMarkers: [route.val().startPosition, route.val().endPosition],
         selectRoutePolylineCoords: route.val().routePoly,
-        matchedRouteKey: data.val().key
+        matchedRouteKey: data.key
       });
     });
+}
+
+_turnOffListeners() {
+  this.routesRef.off();
+  this.matchedRoutesRef.off();
+  this.completedMatchesRef.off();
 }
 
 _showSelectedRoute(haversineKey) {
@@ -341,25 +364,37 @@ _sendMatchRequest() {
 }
 
 _cancelRequest() {
-  this.completedMatchesRef.off("child_added", this._completedMatchCallback);
-  this.matchedRoutesRef.off("child_removed", this._matchedRoutesCallback);
+  // remove the completed/matchedRoute, trigger alert, and then turn of the listner
+  if(this.state.completedMatch) {
+    firebase.database()
+      .ref('completedMatches/' + this.state.completedMatchKey).remove();
+  } else {
+    firebase.database()
+      .ref('matchedRoutes/' + this.state.matchedRouteKey).remove();
+  }
 
-  firebase.database()
-    .ref('matchedRoutes/' + this.state.matchedRouteKey).remove();
-  this.setState({matchRequest: false});
-  this._setListenersOnNewRoute(0.01);
+  this._turnOffListeners();
+
+  this.setState({
+    completedMatch: false,
+    completedMatchKey: '',
+    matchRequest: false,
+    matchedRouteKey: ''
+  });
+  this._setListenersOnNewRoute(0.01); // is this needed?
 }
 
 _setListenersOnNewMatchRequest() {
-  this.routesRef.off("child_added", this._nearbyRoutesCallback);
-  this.routesRef.off("child_removed", this._nearbyRoutesCallback);
+  // this.routesRef.off("child_added", this._nearbyRoutesCallback);
+  // this.routesRef.off("child_removed", this._nearbyRoutesCallback);
+  // this.matchedRoutesRef.off("child_added", this._matchedRoutesCallback);
+  this._turnOffListeners();
   this.completedMatchesRef.orderByChild("author/userID")
     .equalTo(this.props.user.userID)
     .on("child_added", this._completedMatchCallback);
   this.matchedRoutesRef.orderByChild("author/userID")
     .equalTo(this.props.user.userID)
     .on("child_removed", this._rejectedMatchCallback);
-  this.matchedRoutesRef.off("child_added", this._matchedRoutesCallback);
 }
 
 _completedMatchCallback(data){
@@ -373,6 +408,7 @@ _completedMatchCallback(data){
   .then(directionsData => this._createRouteCoordinates(directionsData))
   .then(polylineCoords => {
     this.setState({
+      completedMatchKey: data.key,
       completedMatch: true,
       nearbyRoutes: {},
       selectRouteMarkers: [this.state.startPosition, route.startPosition],
@@ -387,22 +423,18 @@ _completedMatchCallback(data){
     [
       {text: 'Great!', onPress: () => {
         firebase.database().ref('matchedRoutes/' + data.val().matchedRouteKey).remove();
+        firebase.database().ref('routes/' + data.val().author.routeKey).remove();
+        firebase.database().ref('routes/' + data.val().follower.routeKey).remove();
       }}
     ]
   );
-
-  firebase.database().ref('routes/' + data.val().author.routeKey).remove();
-  firebase.database().ref('routes/' + data.val().follower.routeKey).remove();
-
-
 }
 
 _rejectedMatchCallback(data){
   // Lazy way of doing things, creates extra google requests
   // Can be optimized because it recalls _saveRoute
-  this.matchedRoutesRef.off("child_removed", this._rejectedMatchCallback);
-  this.completedMatchesRef.off("child_added", this._completedMatchCallback);
 
+  this._turnOffListeners();
 
   Alert.alert(
     'Match was cancelled',
@@ -415,9 +447,7 @@ _rejectedMatchCallback(data){
 }
 
 _approveMatch(){
-  this.routesRef.off("child_added", this._nearbyRoutesCallback);
-  this.routesRef.off("child_removed", this._nearbyRoutesCallback);
-  this.matchedRoutesRef.off("child_added", this._matchedRoutesCallback);
+  this._turnOffListeners();
   this.matchedRoutesRef.orderByChild("follower/userID")
     .equalTo(this.props.user.userID)
     .on("child_removed", this._alertAuthorIncoming);
@@ -426,11 +456,16 @@ _approveMatch(){
     this.state.startPosition,
     this.state.selectRouteMarkers[0]
   );
+
+  // need to find the route by a different means - if the follower
+  // views a different route before hitting approve then this breaks
+  // find route by hitting the db with matchedRouteKey in the state
+  // and then pull that out of nearbyRoutes with getRouteByChildValue
+  // with the matched route author.routeKey, or name, or userID
   const routeStore = this.state.nearbyRoutes[dist];
   let tempNearby = {};
   tempNearby[dist] = routeStore;
 
-  this.setState({ nearbyRoutes: tempNearby});
 
   const route = this.getRouteByStartAndHaversine();
   let completedMatchKey = this.completedMatchesRef.push();
@@ -446,17 +481,28 @@ _approveMatch(){
       routeKey: this.state.routeKey,
       username: this.props.user.name
     },
+    // for deleteing on author side of things
     matchedRouteKey: this.state.matchedRouteKey
   });
+
+  this.setState({
+    completedMatch: true,
+    nearbyRoutes: tempNearby,
+    completedMatchKey: completedMatchKey.key
+  });
+
 }
 
-_alertAuthorIncoming(){
+_alertAuthorIncoming(data){
+  // get route by the data and getRouteByChildValue instead of
+  // getRouteByStartAndHaversine (selected Route can change?)
   const route = this.getRouteByStartAndHaversine();
   Alert.alert(`Success!`, `${route.name} is on her way!`);
 }
 
 _denyMatch(){
   firebase.database().ref('matchedRoutes/' + this.state.matchedRouteKey).remove();
+  this.matchedRoutesRef.off("child_removed", this._authorCancelledCallback);
   this.setState({
     matchedRoute: false,
     selectRouteMarkers: [],
@@ -572,7 +618,7 @@ searchButtons(){
         </View>
       );
     } else {
-      if(typeof this.state.routeKey === 'undefined') {
+      if( this.state.routeKey === '') {
         return(
           <View style={basicStyles.buttonContainer}>
             {this.destinationButton("Pick a destination")}
@@ -693,7 +739,7 @@ selectedDetail() {
   } else {
     return (
       <View></View>
-    )
+    );
   }
 }
 
