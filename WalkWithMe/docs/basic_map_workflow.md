@@ -14,22 +14,26 @@
 
 * Author finds a route, presses match button
 * matchedRoute is saved to the DB
-  * firebase listener for `child_added` on `routes` turned **OFF**
-  * firebase listener for `child_removed` on `routes` turned **OFF**
-  * firebase listener for `child_added` on `matchedRoutes` turned **OFF**
-  * firebase listener for `child_removed` on `matchedRoutes` turned **ON**
-  * firebase listener for `child_added` on `completedMatches` turned **ON**
+  * firebase listener for **Author** for `child_added` on `routes` turned **OFF**
+  * firebase listener for **Author** for `child_removed` on `routes` turned **OFF**
+  * firebase listener for **Author** for `child_added` on `matchedRoutes` turned **OFF**
+  * firebase listener for **Author** for `child_removed` on `matchedRoutes` turned **ON**
+  * firebase listener for **Author** for `child_added` on `completedMatches` turned **ON**
 * Alert then pops up on Follower's screen <- at this point follower has all the same listeners as the author before requesting a match
+  * firebase listener for **FOLLOWER** for `child_removed` on `matchedRoutes` turned **ON**
+* Author renders cancel button, which would trigger Follower listener and alerts her that the author has canceled  
+    * firebase listener for **FOLLOWER** for `child_removed` on `matchedRoutes` turned **OFF**
+
 
 ### Follower reviews route - option A: Accept
 
 #### Follower accepts route
 
 * Follower hits approve button
-  * firebase listener for `child_added` on `routes` turned **OFF**
-  * firebase listener for `child_removed` on `routes` turned **OFF**
-  * firebase listener for `child_added` on `matchedRoutes` turned **OFF**
-  * firebase listener for `child_removed` on `matchedRoutes` turned **ON**
+  * firebase listener for **FOLLOWER** for `child_added` on `routes` turned **OFF**
+  * firebase listener for **FOLLOWER** for `child_removed` on `routes` turned **OFF**
+  * firebase listener for **FOLLOWER** for `child_added` on `matchedRoutes` turned **OFF**
+  * firebase listener for **FOLLOWER** for `child_removed` on `matchedRoutes` turned **ON**
 * Follower takes the matchedResult and saves it to the completedMatches data slice
 * Follower waits for notice that Author has seen the event
 
