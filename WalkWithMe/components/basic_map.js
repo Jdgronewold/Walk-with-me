@@ -405,23 +405,30 @@ _sendMatchRequest() {
 
 _cancelRequest() {
   // remove the completed/matchedRoute, trigger alert, and then turn of the listner
-  this.setState({
-    completedMatch: false,
-    completedMatchKey: '',
-    matchRequest: false,
-    matchedRouteKey: ''
-  });
+  this._turnOffListeners();
 
   if(this.state.completedMatch) {
     firebase.database()
-      .ref('completedMatches/' + this.state.completedMatchKey).remove();
+    .ref('completedMatches/' + this.state.completedMatchKey).remove();
   } else {
     firebase.database()
-      .ref('matchedRoutes/' + this.state.matchedRouteKey).remove();
+    .ref('matchedRoutes/' + this.state.matchedRouteKey).remove();
   }
-  // need to make this a universal button
 
-  this._turnOffListeners();
+  this.setState({
+    nearbyRoutes: {} ,
+    selectRouteMarkers: [],
+    selectRoutePolylineCoords: [],
+    routeSelectedKey: '',
+    matchedRouteKey: '',
+    completedMatchKey: '',
+    matchedRoute: false,
+    completedMatch: false,
+    spinner: false,
+    matchRequest: false,
+    routeSelected: false
+  });
+
   Alert.alert(
      'You cancelled the match',
     'Would you like to make a new route or continue searching?',
@@ -455,13 +462,28 @@ _completedMatchCallback(data){
     fromCoords: this.state.startPosition,
     toCoords: route.startPosition
   };
+
+  const dist = this.haversine(
+    this.state.startPosition,
+    this.state.selectRouteMarkers[0]
+  );
+
+  // need to find the route by a different means - if the follower
+  // views a different route before hitting approve then this breaks
+  // find route by hitting the db with matchedRouteKey in the state
+  // and then pull that out of nearbyRoutes with getRouteByChildValue
+  // with the matched route author.routeKey, or name, or userID
+  const routeStore = this.state.nearbyRoutes[dist];
+  let tempNearby = {};
+  tempNearby[dist] = routeStore;
+
   getDirections(opts)
   .then(directionsData => this._createRouteCoordinates(directionsData))
   .then(polylineCoords => {
     this.setState({
       completedMatchKey: data.key,
       completedMatch: true,
-      nearbyRoutes: {},
+      nearbyRoutes: tempNearby,
       selectRouteMarkers: [this.state.startPosition, route.startPosition],
       selectRoutePolylineCoords: polylineCoords
     });
