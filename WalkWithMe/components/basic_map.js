@@ -501,6 +501,27 @@ _completedMatchCallback(data){
       }}
     ]
   );
+
+  this.tracker = navigator.geolocation.watchPosition(
+    (position) => {
+      this.setState({startPosition: position.coords });
+      // not entirely sure the if statement will work
+      if(position.coords === this.state.selectRouteMarkers[1]) {
+        navigator.geolocation.clearWatch(this.tracker);
+        Alert.alert(
+          'You have reached your match!',
+          'Safe travels!'
+        );
+      }
+    },
+    (error) => {
+      Alert.alert(
+        'There was an error getting your location',
+        'Please wait for geolocation'
+      );
+    },
+    {enableHighAccuracy: true, timeout: 20000, maximumAge: 3000}
+  );
 }
 
 _approveMatch(){
