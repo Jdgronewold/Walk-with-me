@@ -75,7 +75,7 @@ class Login extends Component {
       console.log(error);
       alert('Error fetching data: ' + error.toString());
     } else {
-      if(result.gender === 'boop'){
+      if(result.gender === 'gazorpazorp'){
         LoginManager.logOut();
         firebase.auth().signOut();
         alert('Sorry, only women are currently allowed on Walk With Me.');

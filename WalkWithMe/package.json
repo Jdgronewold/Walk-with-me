@@ -13,7 +13,7 @@
     "react-native": "0.40.0",
     "react-native-fbsdk": "^0.5.0",
     "react-native-google-places": "^2.0.4",
-    "react-native-maps": ">=0.12.4"
+    "react-native-maps": "^0.13.0"
   },
   "devDependencies": {
     "babel-jest": "18.0.0",
