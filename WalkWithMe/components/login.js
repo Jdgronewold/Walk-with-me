@@ -92,6 +92,7 @@ class Login extends Component {
       gender: result.gender,
       // get from state -> only problem is if we get here before
       // the setState in the first .then has not returned
+      // if need to force setState to be synchronous by passing function
       accessToken: this.state.accessToken
     };
 
