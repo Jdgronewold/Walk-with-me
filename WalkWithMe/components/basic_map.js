@@ -1,3 +1,6 @@
+// Please look at basic_map_workflow in ../docs to get an idea of how the
+// route listeners work
+
 import React, { Component } from 'react';
 import { bindAll, merge, isEmpty } from 'lodash';
 import {
@@ -15,6 +18,7 @@ import Polyline from '@mapbox/polyline';
 import { getDirections, getLocation, getFacebookPhoto } from './utils';
 import * as firebase from 'firebase';
 import CustomCallout from './CustomCallout';
+import Messages from './message';
 
 const { width, height } = Dimensions.get('window');
 
@@ -56,12 +60,17 @@ class BasicMap extends React.Component {
      matchRequest: false,
      // set when clicking on a marker
      routeSelected: false,
+     // set when route matched
+     messagesKey: '',
+     // set when a message is received
+     queuedMessage: false
    };
 
 
    this.completedMatchesRef = firebase.database().ref('completedMatches');
    this.matchedRoutesRef = firebase.database().ref('matchedRoutes');
    this.routesRef = firebase.database().ref('routes');
+   this.messagesRef = firebase.database().ref('messages');
 
    bindAll(this,
      'makeMarker', 'destinationButton', 'searchButtons',
@@ -76,7 +85,7 @@ class BasicMap extends React.Component {
      '_alertAuthorIncoming', 'insertModal', 'cancelMatchButtons',
      '_cancelRequest', '_authorCancelledCallback', 'updateFromChild',
      'renderCircle', '_turnOffListeners', '_showPotentialMatch',
-     '_followerCancelledCallback'
+     '_followerCancelledCallback', '_messageAlert', '_jumpToMessages'
    );
  }
 
@@ -383,6 +392,9 @@ _sendMatchRequest() {
 
   const route = this.getRouteByStartAndHaversine();
   let matchedRouteKey = this.matchedRoutesRef.push();
+  let messagesKey = this.messagesRef.push();
+  // get the chat id here and set it in the matchedRoute
+  // so that the follower will also have access to it
   matchedRouteKey.set({
     author: {
       userID: this.props.user.userID,
@@ -394,13 +406,15 @@ _sendMatchRequest() {
       routeKey: route.routeKey,
       username: route.name
     },
-    key: matchedRouteKey.key
+    key: matchedRouteKey.key,
+    messagesKey: messagesKey.key
   });
   this.setState({
     matchedRouteKey: matchedRouteKey.key,
-    matchRequest: true
-  });
-  this._setListenersOnNewMatchRequest();
+    matchRequest: true,
+    messagesKey: messagesKey
+  }, this._setListenersOnNewMatchRequest());
+
 }
 
 _cancelRequest() {
@@ -450,6 +464,15 @@ _setListenersOnNewMatchRequest() {
   this.matchedRoutesRef.orderByChild("author/userID")
     .equalTo(this.props.user.userID)
     .on("child_removed", this._followerCancelledCallback);
+  // set listener for
+  this.messagesRef.orderByKey().equalTo(this.state.messagesKey)
+    .on("child_added", this._messageAlert);
+}
+
+_messageAlert() {
+  this.timer = setInterval(() => {
+    this.setState({queuedMessage: !this.state.queuedMessage});
+  }, 3000);
 }
 
 _completedMatchCallback(data){
@@ -506,6 +529,8 @@ _completedMatchCallback(data){
     (position) => {
       this.setState({startPosition: position.coords });
       // not entirely sure the if statement will work
+      // need to add some leeway here in terms of being close
+      //but not on top of
       if(position.coords === this.state.selectRouteMarkers[1]) {
         navigator.geolocation.clearWatch(this.tracker);
         Alert.alert(
@@ -588,6 +613,15 @@ _denyMatch(){
     matchedRoute: false,
     selectRouteMarkers: [],
     selectRoutePolylineCoords: []
+  });
+}
+
+_jumpToMessages() {
+  clearInterval(this.timer);
+  this.props.navigator.jumpTo({
+    component: Messages,
+    title: 'messages',
+    passProps: {messageKey: this.state.messageKey}
   });
 }
 
@@ -814,7 +848,10 @@ selectedDetail() {
           source={{uri: route.imgUrl}}
           />
         <Text style={basicStyles.selectedFont}> {route.name} </Text>
-        <Text style={basicStyles.selectedFont}> Message </Text>
+        <Text
+          style={this.state.queuedMessage ?
+            basicStyles.selectedFont :  basicStyles.selectedColoredFont}
+          onPress={this._jumpToMessages}> Message </Text>
       </View>
     );
   } else {

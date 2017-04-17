@@ -75,7 +75,7 @@ class Login extends Component {
       console.log(error);
       alert('Error fetching data: ' + error.toString());
     } else {
-      if(result.gender === 'boop'){
+      if(result.gender === 'gazorpazorp'){
         LoginManager.logOut();
         firebase.auth().signOut();
         alert('Sorry, only women are currently allowed on Walk With Me.');
@@ -92,6 +92,7 @@ class Login extends Component {
       gender: result.gender,
       // get from state -> only problem is if we get here before
       // the setState in the first .then has not returned
+      // if need to force setState to be synchronous by passing function
       accessToken: this.state.accessToken
     };
 

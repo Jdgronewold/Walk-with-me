@@ -59,6 +59,12 @@ export const basicStyles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold'
   },
+  selectedColoredFont: {
+    color: '#dd0048',
+    margin: 10,
+    fontSize: 20,
+    fontWeight: 'bold'
+  },
   selectedIcon: {
     height: 80,
     width: 80,
