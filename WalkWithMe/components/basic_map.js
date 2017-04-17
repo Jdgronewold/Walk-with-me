@@ -63,7 +63,8 @@ class BasicMap extends React.Component {
      // set when route matched
      messagesKey: '',
      // set when a message is received
-     queuedMessage: false
+     queuedMessage: false,
+     messages: {}
    };
 
 
@@ -469,9 +470,15 @@ _setListenersOnNewMatchRequest() {
     .on("child_added", this._messageAlert);
 }
 
-_messageAlert() {
+_messageAlert(data) {
+  debugger // check to see if data.key works
+  let messages = merge({}, this.state.messages);
+  messages[data.key] = data.val();
+  this.setState({messages: messages});
   this.timer = setInterval(() => {
-    this.setState({queuedMessage: !this.state.queuedMessage});
+    this.setState({
+      queuedMessage: !this.state.queuedMessage
+    });
   }, 3000);
 }
 
@@ -621,9 +628,16 @@ _jumpToMessages() {
   this.props.navigator.jumpTo({
     component: Messages,
     title: 'messages',
-    passProps: {messageKey: this.state.messageKey}
+    passProps: {
+      messageKey: this.state.messageKey,
+      messages: this.state.messages,
+      user: this.props.user,
+      updateFromChild: this.updateFromChild
+    }
   });
 }
+
+
 
 
 haversine(startLocation, testLocation) {
