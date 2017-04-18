@@ -15,6 +15,45 @@ export const basicStyles = StyleSheet.create({
   map: {
     ...StyleSheet.absoluteFillObject,
   },
+  messagesContainer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  textContainer: {
+    flex: 4,
+    flexDirection: 'column'
+  },
+  messageInput: {
+    flex: 1,
+    flexDirection: 'row'
+  },
+  authorText: {
+    color: '#ba0be0',
+    fontSize: 16,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.7)',
+  },
+  authorView: {
+    flexDirection: 'column',
+    justifyContent: 'flex-end'
+  },
+  senderView: {
+    flexDirection: 'column',
+    justifyContent: 'flex-start'
+  },
+  senderText: {
+    color: 'rgb(255,255,255)',
+    fontSize: 16,
+    borderRadius: 20,
+    backgroundColor: '#ba0be0',
+  },
+  messageText: {
+    flex: 3,
+    fontSize: 16
+  },
+  messageButton: {
+    flex: 1,
+    fontSize: 10
+  },
   bubble: {
       backgroundColor: 'rgba(255,255,255,0.7)',
       paddingHorizontal: 18,

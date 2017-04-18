@@ -290,6 +290,9 @@ _authorCancelledCallback(data) {
     spinner: false,
     matchRequest: false,
     routeSelected: false,
+    messagesKey: '',
+    queuedMessage: false,
+    messages: {}
   });
 
   const authorName = data.val().author.username;
@@ -319,6 +322,9 @@ _followerCancelledCallback(data) {
     spinner: false,
     matchRequest: false,
     routeSelected: false,
+    messagesKey: '',
+    queuedMessage: false,
+    messages: {}
   });
 
   const followerName = data.val().follower.username;
@@ -353,7 +359,8 @@ _showPotentialMatch(data){
         nearbyRoutes: tempRoutes,
         selectRouteMarkers: [route.val().startPosition, route.val().endPosition],
         selectRoutePolylineCoords: route.val().routePoly,
-        matchedRouteKey: data.key
+        matchedRouteKey: data.key,
+        messagesKey: data.val().messagesKey
       });
     });
 }
@@ -362,6 +369,7 @@ _turnOffListeners() {
   this.routesRef.off();
   this.matchedRoutesRef.off();
   this.completedMatchesRef.off();
+  this.messagesRef.off();
 }
 
 _showSelectedRoute(haversineKey) {
@@ -441,7 +449,10 @@ _cancelRequest() {
     completedMatch: false,
     spinner: false,
     matchRequest: false,
-    routeSelected: false
+    routeSelected: false,
+    messagesKey: '',
+    queuedMessage: false,
+    messages: {}
   });
 
   Alert.alert(
@@ -465,7 +476,7 @@ _setListenersOnNewMatchRequest() {
   this.matchedRoutesRef.orderByChild("author/userID")
     .equalTo(this.props.user.userID)
     .on("child_removed", this._followerCancelledCallback);
-  // set listener for
+  // set listener for messages
   this.messagesRef.orderByKey().equalTo(this.state.messagesKey)
     .on("child_added", this._messageAlert);
 }
@@ -475,11 +486,13 @@ _messageAlert(data) {
   let messages = merge({}, this.state.messages);
   messages[data.key] = data.val();
   this.setState({messages: messages});
-  this.timer = setInterval(() => {
-    this.setState({
-      queuedMessage: !this.state.queuedMessage
-    });
-  }, 3000);
+  if (this.props.navigator.navigationContext._currentRoute.title === "map") {
+    this.timer = setInterval(() => {
+      this.setState({
+        queuedMessage: !this.state.queuedMessage
+      });
+    }, 3000);
+  }
 }
 
 _completedMatchCallback(data){
@@ -564,6 +577,9 @@ _approveMatch(){
   this.completedMatchesRef.orderByChild("follower/userID")
     .equalTo(this.props.user.userID)
     .on("child_removed", this._authorCancelledCallback);
+  this.messagesRef.orderByKey().equalTo(this.state.messagesKey)
+    .on("child_added", this._messageAlert);
+
 
   const dist = this.haversine(
     this.state.startPosition,
@@ -571,7 +587,7 @@ _approveMatch(){
   );
 
   // need to find the route by a different means - if the follower
-  // views a different route before hitting approve then this breaks
+  // views a different route before hitting approve then this breaks.
   // find route by hitting the db with matchedRouteKey in the state
   // and then pull that out of nearbyRoutes with getRouteByChildValue
   // with the matched route author.routeKey, or name, or userID
@@ -619,22 +635,31 @@ _denyMatch(){
   this.setState({
     matchedRoute: false,
     selectRouteMarkers: [],
-    selectRoutePolylineCoords: []
+    selectRoutePolylineCoords: [],
+    messageKey: ''
   });
 }
 
 _jumpToMessages() {
-  clearInterval(this.timer);
-  this.props.navigator.jumpTo({
-    component: Messages,
-    title: 'messages',
-    passProps: {
-      messageKey: this.state.messageKey,
-      messages: this.state.messages,
-      user: this.props.user,
-      updateFromChild: this.updateFromChild
-    }
-  });
+  if (this.state.messageKey === '') {
+    Alert.alert(
+      'You are not currently matched with anyone',
+      'Please either match or approve a match to message'
+    );
+  } else {
+    clearInterval(this.timer);
+    this.setState({queuedMessage: false});
+    this.props.navigator.jumpTo({
+      component: Messages,
+      title: 'messages',
+      passProps: {
+        messageKey: this.state.messageKey,
+        messages: this.state.messages,
+        user: this.props.user,
+        updateFromChild: this.updateFromChild
+      }
+    });
+  }
 }
 
 

@@ -11,11 +11,11 @@ import * as firebase from 'firebase';
 import { basicStyles, mapStyle } from './styles';
 
 
-class Message extends React.Component {
+class Messages extends React.Component {
   constructor(props) {
     super(props);
 
-    this.messages = firebase.database().ref('messages');
+    this.state = {text: ''};
   }
 
   componentDidMount() {
@@ -27,19 +27,20 @@ class Message extends React.Component {
     // to the left or the right depending on whether the message is from the
     // author or the follower --> probably need to pass the user through then
     // as well as props to be able to check and see
+    this.messages = firebase.database().ref('messages').child(`${this.props.messageKey}`);
   }
 
 
 
   render() {
-
+    debugger
     let checkViewStyle = (key) => {
-      return this.props.messages[key].author.username === this.props.user.username ?
+      return this.props.messages[key].author === this.props.user.name ?
         basicStyles.authorView : basicStyles.senderView;
     };
 
     let checkTextStyle = (key) => {
-      return this.props.messages[key].author.username === this.props.user.username ?
+      return this.props.messages[key].author === this.props.user.name ?
         basicStyles.authorText : basicStyles.senderText;
     };
 
@@ -54,16 +55,31 @@ class Message extends React.Component {
     });
 
     return (
-      <View style={basicStyles.container}>
+      <View style={basicStyles.messagesContainer}>
         <View style={basicStyles.textContainer}>
           {rows}
         </View>
-        <View>
-          // TextInput here and a button to submit that
-          // calls this.props.updateFromChild(messages, text)
+        <View style={basicStyles.messageInput}>
+          <TextInput
+            style={basicStyles.messageText}
+            placeholder="Enter message"
+            onChangeText={(text) => this.setState({text})}
+          />
+          <Button style={basicStyles.messageButton}
+           onPress={() => {
+             let messageObj = {
+               author: this.props.user.name,
+               text: this.state.text
+             };
+             this.messages.push().set(messageObj);
+           }}>
+          Send
+          </Button>
         </View>
       </View>
     );
   }
 
 }
+
+export default Messages;
