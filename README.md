@@ -51,5 +51,3 @@ At the conclusion of the walk, users are directed to rate their matches on a 5 s
   * Firebase
     * User authentication
     * Realtime database
-
-### Implementation
