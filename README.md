@@ -1,5 +1,10 @@
 ## Walk With Me
 
+[Demo Page](http://www.zach-haddad.com/wwm)
+
+![demo_gif](./WalkWithMe/docs/images/wwm.gif)
+
+
 Why walk alone at night or through isolated neighborhoods when there are other women walking in a similar direction?  Walk With Me is a mobile iOS application built with React Native that matches female users to each other so that they can have someone to walk home with.
 
 ### Login
